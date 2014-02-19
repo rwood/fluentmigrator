@@ -48,7 +48,7 @@ namespace FluentMigrator.Runner.Generators.SqlServer
         public override string RenameColumn { get { return "{0}.{1}', '{2}'"; } }
         public override string RenameTable { get { return "{0}', '{1}'"; } }
 
-        public override string CreateIndex { get { return "CREATE {0}{1}INDEX {2} ON {3}.{4} ({5}{6}{7})"; } }
+        public override string CreateIndex { get { return "CREATE {0}{1}INDEX {2} ON {3}.{4} ({5}{6}{7}){8}"; } }
         public override string DropIndex { get { return "DROP INDEX {0} ON {1}.{2}"; } }
 
         public override string InsertData { get { return "INSERT INTO {0}.{1} ({2}) VALUES ({3})"; } }
@@ -273,7 +273,14 @@ namespace FluentMigrator.Runner.Generators.SqlServer
                 , Quoter.QuoteTableName(expression.Index.TableName)
                 , String.Join(", ", indexColumns)
                 , GetIncludeString(expression)
-                , String.Join(", ", indexIncludes));
+                , String.Join(", ", indexIncludes)
+                , GetIndexWithString(expression));
+        }
+
+        private string GetIndexWithString(CreateIndexExpression expression)
+        {
+            if (expression.Index.FillFactor == null) return "";
+            return string.Format(" WITH (DROP_EXISTING = ON, FILL_FACTOR = {0})", expression.Index.FillFactor);
         }
 
         public override string Generate(DeleteIndexExpression expression)
