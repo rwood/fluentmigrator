@@ -5,8 +5,7 @@ namespace FluentMigrator.SchemaGen.Model
 {
     public class IndexDefinitionExt : IndexDefinition, ICodeComparable
     {
-        public virtual bool IsPrimary { get; set; } // SchemaGen use only
-        public virtual bool IsFkIndex { get; set; } // SchemaGen use only
+        public virtual bool IsFkIndex { get; set; }
 
         public string FQName 
         {
@@ -55,6 +54,11 @@ namespace FluentMigrator.SchemaGen.Model
             if (IsClustered)
             {
                 sb.AppendFormat(".WithOptions().Clustered()");
+            }
+
+            if (FillFactor != null)
+            {
+                sb.AppendFormat(".WithOptions().Fill({0})", FillFactor);
             }
 
             foreach (var col in Columns)

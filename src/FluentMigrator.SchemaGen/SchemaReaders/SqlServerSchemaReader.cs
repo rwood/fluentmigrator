@@ -581,10 +581,11 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             using (DataTable dt = ds.Tables[0])
             {
                 IEnumerable<IndexDefinitionExt> indexes = from row in dt.Rows.Cast<DataRow>()
-                    group new IndexColumnDefinition
+                    group new 
                         {
                             Name = row["column_name"].ToString(), 
-                            Direction = Convert.ToBoolean(row["is_descending_key"]) ? Direction.Descending : Direction.Ascending
+                            Direction = Convert.ToBoolean(row["is_descending_key"]) ? Direction.Descending : Direction.Ascending,
+                            IsIncluded = Convert.ToBoolean(row["is_included_column"])
                         } 
                     by new
                         {
@@ -593,17 +594,20 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
                             IndexName = row["index_name"].ToString(),
                             IsClustered = row["type_desc"].ToString() == "CLUSTERED",
                             IsUnique = Convert.ToBoolean(row["is_unique"]),
-                            IsPrimary = Convert.ToBoolean(row["is_primary_key"])
+                            IsPrimary = Convert.ToBoolean(row["is_primary_key"]),
+                            FillFactor = Convert.ToInt32(row["fill_factor"])
                         } into g
                     select new IndexDefinitionExt 
                         {
-                            Columns = g.ToList(),
+                            Columns = g.Where(col => !col.IsIncluded).Select(col => new IndexColumnDefinition { Name = col.Name, Direction = col.Direction }).ToList(),
+                            Includes = g.Where(col => col.IsIncluded).Select(col => new IndexIncludeDefinition { Name = col.Name }).ToList(),
                             SchemaName = g.Key.SchemaName,
                             TableName = g.Key.TableName,
                             Name = g.Key.IndexName,
                             IsClustered= g.Key.IsClustered,
                             IsUnique = g.Key.IsUnique,
-                            IsPrimary = g.Key.IsPrimary
+                            IsPrimary = g.Key.IsPrimary,
+                            FillFactor = g.Key.FillFactor
                         };
 
                 return indexes.ToList();
