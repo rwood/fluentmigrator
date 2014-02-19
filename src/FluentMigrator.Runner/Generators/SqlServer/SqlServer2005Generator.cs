@@ -280,7 +280,9 @@ namespace FluentMigrator.Runner.Generators.SqlServer
         private string GetIndexWithString(CreateIndexExpression expression)
         {
             if (expression.Index.FillFactor == null) return "";
-            return string.Format(" WITH (DROP_EXISTING = ON, FILL_FACTOR = {0})", expression.Index.FillFactor);
+            int fillFactor = expression.Index.FillFactor.Value;
+            if (fillFactor == 0) fillFactor = 100;
+            return string.Format(" WITH (FILLFACTOR = {0})", fillFactor);
         }
 
         public override string Generate(DeleteIndexExpression expression)
