@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="CHANGELOG.md" />
     <None Include="packages.config" />
     <None Include="codegen_tests.msbuild">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -98,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Debug.txt" />
+    <Content Include="LICENSE.txt" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
