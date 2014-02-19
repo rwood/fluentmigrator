@@ -57,11 +57,6 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             this.db2 = db2;
         }
 
-        public bool IsInstall
-        {
-            get { return db1 is EmptyDbSchemaReader; }
-        }
-
         #region Helpers
 
         protected class Block : IDisposable
@@ -100,19 +95,14 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             if (options.PreScripts)
             {
-                WriteSqlScriptClass("01_Pre");
+                WriteSqlScriptClass("1_Pre");
             }
 
             // Create/Update All tables/columns/indexes/foreign keys
-            CreateUpdateTables(IsInstall ? "02_Install" : "03_Upgrade");
+            CreateUpdateTables("2_PerTable");
 
             // TODO: Drop/Create new or modified scripts (SPs/Views/Functions)
             // CreateUpdateScripts();
-
-            if (options.PostScripts)
-            {
-                WriteSqlScriptClass("04_Post");
-            }
 
             if (options.DropTables)
             {
@@ -128,13 +118,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             if (options.PostScripts)
             {
-                WriteSqlScriptClass("05_Functions");
-                WriteSqlScriptClass("06_Views");
-                WriteSqlScriptClass("07_SPs");
-
-                WriteSqlScriptClass("10_SeedData");
-                WriteSqlScriptClass("11_DemoData", "Demo");
-                WriteSqlScriptClass("12_TestData", "Test");
+                WriteSqlScriptClass("3_Post");
             }
 
             // TODO: Drop old user defined DataTypes
@@ -170,12 +154,12 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         /// These are project classes that inherit from AutoReversingMigration and Migration.
         /// </param>
         /// <param name="addTags">Additional FluentMigrator Tags applied to the class</param> 
-        // Main Entry point
-        protected CodeLines WriteClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addTags = null)
+        /// <returns>true if a class was written</returns>
+        protected bool WriteClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addTags = null)
         {
             // If no code is generated for an Up() method => No class is emitted
             var upMethodCode = upMethod();
-            if (!upMethodCode.Any()) return upMethodCode;
+            if (!upMethodCode.Any()) return false;
 
             var codeLines = new CodeLines();
 
@@ -183,7 +167,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             long nMigration = GetMigrationNumber(options.MigrationVersion, step);
 
             // Prefix class with zero filled order number.
-            className = string.Format("M{0,4:D4}_{1}", nMigration, className);
+            className = string.Format("M{0:D9}_{1}", nMigration, className);
 
             string fullDirName = options.OutputDirectory;
 
@@ -250,14 +234,13 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                         writer.WriteLine(line);
                     }
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
-                announcer.Error(classPath + ": Failed to write class file");
-                for (; ex != null; ex = ex.InnerException) announcer.Error(ex.Message);
+                throw new Exception(classPath + ": Failed to write class file", ex);
             }
-
-            return codeLines;
         }
 
         private CodeLines CantUndo()
@@ -306,10 +289,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         private void WriteSqlScriptClass(string subfolder, string tags = null)
         {
-            var sqlDir = new DirectoryInfo(sqlFileWriter.GetSqlDirectoryPath(subfolder));
+            var sqlDir = sqlFileWriter.GetSqlDirectory(subfolder);
             if (!sqlDir.Exists)
             {
-                announcer.Say(sqlDir.FullName + ": Did not find SQL script folder");
+                announcer.Emphasize(sqlDir.FullName + ": SQL script folder not found.");
                 return;
             }
 
@@ -379,9 +362,20 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         #endregion
 
         #region Create / Update Tables
-        private void CreateUpdateTables(string schemaSqlFolder)
+        private void CreateUpdateTables(string perTableSubfolder)
         {
             var db1Tables = db1.Tables;
+
+            DirectoryInfo perTableSqlDir = null;
+            if (options.PerTableScripts)
+            {
+                perTableSqlDir = sqlFileWriter.GetSqlDirectory(perTableSubfolder);
+                if (!perTableSqlDir.Exists)
+                {
+                    announcer.Emphasize(perTableSqlDir.FullName + ": SQL script folder not found.");
+                    return;
+                }
+            }
 
             // TODO: Currently ignoring Schema name for table objects.
 
@@ -395,7 +389,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 if (db1Tables.ContainsKey(newTable.Name))
                 {
                     TableDefinitionExt oldTable = db1Tables[newTable.Name];
-                    WriteClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable, schemaSqlFolder));
+                    WriteClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable, perTableSqlDir));
                 }
                 else
                 {
@@ -413,7 +407,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         /// <param name="oldTable"></param>
         /// <param name="newTable"></param>
         /// <param name="schemaSqlFolder"></param>
-        private CodeLines UpdateTable(TableDefinitionExt oldTable, TableDefinitionExt newTable, string schemaSqlFolder)
+        private CodeLines UpdateTable(TableDefinitionExt oldTable, TableDefinitionExt newTable, DirectoryInfo perTableSqlDir)
         {
             var lines = new CodeLines();
 
@@ -456,7 +450,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // Note: The developer may inject custom data migration code here
             // We preserve old columns and indexes for this phase.
-            sqlFileWriter.MigrateData(lines, schemaSqlFolder, newTable.Name);       // Run data migration SQL 
+            sqlFileWriter.MigrateData(lines, perTableSqlDir, newTable.Name);       // Run data migration SQL 
 
             AddObjects(lines, fkDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED foreign keys
             AddObjects(lines, ixDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED indexes (excluding 1 column indexes)

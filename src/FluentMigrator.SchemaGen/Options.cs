@@ -45,12 +45,16 @@ namespace FluentMigrator.SchemaGen
 
         bool PreScripts { get; }
         bool PostScripts { get; }
+        bool PerTableScripts { get; }
 
         bool UseDeprecatedTypes { get; }
         bool ShowChanges { get; }
         bool DropScripts { get; }
         bool DropTables { get; }
         bool SetNotNullDefault { get; }
+
+        bool IsInstall { get; } 
+        bool IsUpgrade { get; }
     }
 
     /// <summary>
@@ -75,6 +79,15 @@ namespace FluentMigrator.SchemaGen
         [Option("db2", Required = false, HelpText = "2nd SQL Server database name if generating migration code.")]
         public string Db2 { get; set; }
 
+        public bool IsInstall
+        {
+            get { return !string.IsNullOrEmpty(Db); }
+        }
+
+        public bool IsUpgrade
+        {
+            get { return !string.IsNullOrEmpty(Db1) && !string.IsNullOrEmpty(Db2); }
+        }
         
         [Option("dir", DefaultValue = ".", HelpText = "class directory")]
         public string OutputDirectory { get; set; }
@@ -126,6 +139,9 @@ namespace FluentMigrator.SchemaGen
 
         [Option("post-scripts", DefaultValue = true, HelpText = "If true, import Post schema change SQL scripts.")]
         public bool PostScripts { get; set; }
+
+        [Option("per-table-scripts", DefaultValue = true, HelpText = "If true, imports a data migration script per table as part of table migration class.")]
+        public bool PerTableScripts { get; set; }
 
         [ParserState]
         public IParserState LastParserState { get; set; }

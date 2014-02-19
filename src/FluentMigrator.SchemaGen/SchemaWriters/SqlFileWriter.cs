@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -122,28 +123,35 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             }
         }
 
-        public string GetSqlDirectoryPath(string subfolder)
+        public DirectoryInfo GetSqlDirectory(string subfolder)
         {
-            string path = Path.Combine(options.SqlDirectory ?? "SQL", options.MigrationVersion);
-            return Path.Combine(path, subfolder);
+            string path = options.SqlDirectory;
+            if (path == null)
+            {
+                path = Path.Combine("SQL", options.IsInstall ? "M2_Install" : "M2_Upgrade");
+                path = Path.Combine(path, options.MigrationVersion);
+            }
+
+            return new DirectoryInfo(Path.Combine(path, subfolder));
         }
 
-        public void MigrateData(CodeLines lines, string schemaSqlFolder, string tableName)
+        public void MigrateData(CodeLines lines, DirectoryInfo perTableSqlDir, string tableName)
         {
-            if (options.SqlDirectory != null)
+            if (options.PerTableScripts)
             {
-                string sqlDirPath = GetSqlDirectoryPath(schemaSqlFolder);
-                string sqlFilePath = Path.Combine(sqlDirPath, tableName + ".sql");
+                Debug.Assert(perTableSqlDir != null);
+            }
 
+            if (options.SqlDirectory != null && perTableSqlDir != null)
+            {
+                string sqlFilePath = Path.Combine(perTableSqlDir.FullName, tableName + ".sql");
                 var sqlFile = new FileInfo(sqlFilePath);
 
-                if (!sqlFile.Exists)
+                if (sqlFile.Exists)
                 {
-                    announcer.Say("{0}: Data migration SQL script not found.", sqlFile.FullName);
-                    return;
+                    announcer.Say(sqlFile.FullName + ": Imported SQL script.");
+                    ExecuteSqlFile(lines, sqlFile);
                 }
-
-                ExecuteSqlFile(lines, sqlFile);
             }
         }
     }
