@@ -9,18 +9,21 @@ namespace FluentMigrator.Runner
 {
     public class ProfileLoader : IProfileLoader
     {
-        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions)
+        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions, IEnumerable<string> tagsToMatch)
         {
             Runner = runner;
             Assembly = runner.MigrationAssembly;
             Profile = runnerContext.Profile;
             Conventions = conventions;
+            TagsToMatch = tagsToMatch.ToArray();
 
             Initialize();
         }
 
         private Assembly Assembly { get; set; }
         private string Profile { get; set; }
+        private IEnumerable<string> TagsToMatch { get; set; }
+
         protected IMigrationConventions Conventions { get; set; }
         private IMigrationRunner Runner { get; set; }
 
@@ -36,12 +39,14 @@ namespace FluentMigrator.Runner
 
         public IEnumerable<IMigration> FindProfilesIn(Assembly assembly, string profile)
         {
-            string[] profiles = profile.ToLower().Split(';');
+            string[] profiles = profile.ToLower().Split('|');
 
             return 
                 from type in assembly.GetExportedTypes()
                 let profileName = type.GetOneAttribute<ProfileAttribute>().ProfileName.ToLower()
-                where Conventions.TypeIsProfile(type) && profiles.Contains(profileName)
+                where Conventions.TypeIsProfile(type) 
+                    && (profiles.Contains(profileName) || profileName == "*")
+                    && (!Conventions.TypeHasTags(type) || Conventions.TypeHasMatchingTags(type, TagsToMatch))
                 orderby type.FullName
                 select type.Assembly.CreateInstance(type.FullName) as IMigration;
         }

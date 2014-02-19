@@ -85,7 +85,7 @@ namespace FluentMigrator.Runner
             _migrationValidator = new MigrationValidator(_announcer, Conventions);
             VersionLoader = new VersionLoader(this, _migrationAssembly, Conventions);
             MigrationLoader = new DefaultMigrationInformationLoader(Conventions, _migrationAssembly, runnerContext.Namespace, runnerContext.NestedNamespaces, runnerContext.Tags);
-            ProfileLoader = new ProfileLoader(runnerContext, this, Conventions);
+            ProfileLoader = new ProfileLoader(runnerContext, this, Conventions, runnerContext.Tags);
         }
 
         public IVersionLoader VersionLoader { get; set; }
