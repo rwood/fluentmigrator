@@ -179,8 +179,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             var codeLines = new CodeLines();
 
+            // Class name includes migration number
+            long nMigration = GetMigrationNumber(options.MigrationVersion, step);
+
             // Prefix class with zero filled order number.
-            className = string.Format("M{0,4:D4}_{1}", step, className);
+            className = string.Format("M{0,4:D4}_{1}", nMigration, className);
 
             string fullDirName = options.OutputDirectory;
 
@@ -207,9 +210,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
                 using (new Block(codeLines)) // namespace {}
                 {
-                    codeLines.WriteLine("[MigrationVersion({0})] // {1}",
-                        options.MigrationVersion.Replace(".", ", ") + ", " + step,
-                        GetMigrationNumber(options.MigrationVersion, step));
+                    codeLines.WriteLine("[MigrationVersion({0})]",
+                        options.MigrationVersion.Replace(".", ", ") + ", " + step);
 
                     string tags = options.Tags ?? "" + addTags ?? "";
                     if (!string.IsNullOrEmpty(tags))
