@@ -32,8 +32,10 @@ namespace FluentMigrator.Model
         public virtual bool IsUnique { get; set; }
         public virtual bool IsPrimary { get; set; }
         public bool IsClustered { get; set; }
+        public virtual int? FillFactor { get; set; }
         public virtual ICollection<IndexColumnDefinition> Columns { get; set; }
         public virtual ICollection<IndexIncludeDefinition> Includes { get; set; }
+
 
         public IndexDefinition()
         {
@@ -75,6 +77,7 @@ namespace FluentMigrator.Model
                 IsUnique = IsUnique,
                 IsPrimary = IsPrimary,
                 IsClustered = IsClustered,
+                FillFactor = FillFactor,
                 Columns = Columns.CloneAll().ToList(),
                 Includes = Includes.CloneAll().ToList()
             };

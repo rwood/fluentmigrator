@@ -93,5 +93,11 @@ namespace FluentMigrator.Builders.Create.Index
             Expression.Index.IsClustered = true;
             return this;
         }
+
+        public ICreateIndexOnColumnSyntax Fill(int fillFactor)
+        {
+            Expression.Index.FillFactor = fillFactor;
+            return this;
+        }
     }
 }
