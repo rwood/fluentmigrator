@@ -20,7 +20,7 @@ using System;
 
 namespace FluentMigrator.Runner
 {
-    public interface IAnnouncer
+    public interface IAnnouncer : IDisposable
     {
         void Heading(string message);
         void Say(string message);

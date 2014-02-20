@@ -23,11 +23,13 @@ namespace FluentMigrator.Runner.Announcers
 {
     public class TextWriterAnnouncer : Announcer
     {
+        private TextWriter writer;
         private readonly Action<string> write;
 
         public TextWriterAnnouncer(TextWriter writer)
             : this(writer.Write)
         {
+            this.writer = writer;
         }
 
         public TextWriterAnnouncer(Action<string> write)
@@ -51,6 +53,15 @@ namespace FluentMigrator.Runner.Announcers
         {
             write(escaped ? string.Format("/* {0} */", message) : message);
             write(Environment.NewLine);
+        }
+
+        public override void Dispose()
+        {
+            if (writer != null)
+            {
+                writer.Dispose();
+                writer = null;
+            }
         }
     }
 }

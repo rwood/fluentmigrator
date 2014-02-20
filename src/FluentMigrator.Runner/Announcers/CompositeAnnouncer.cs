@@ -70,5 +70,11 @@ namespace FluentMigrator.Runner.Announcers
             foreach (var announcer in announcers)
                 action(announcer);
         }
+
+        public void Dispose()
+        {
+            foreach (var announcer in announcers)
+                announcer.Dispose();
+        }
     }
 }
