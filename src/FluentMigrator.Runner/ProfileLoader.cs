@@ -41,11 +41,11 @@ namespace FluentMigrator.Runner
         {
             string[] profiles = profile.ToLower().Split('|');
 
-            return 
-                from type in assembly.GetExportedTypes()
+            var profileClasses = assembly.GetExportedTypes().Where(type => Conventions.TypeIsProfile(type));
+
+            return from type in profileClasses
                 let profileName = type.GetOneAttribute<ProfileAttribute>().ProfileName.ToLower()
-                where Conventions.TypeIsProfile(type) 
-                    && (profiles.Contains(profileName) || profileName == "*")
+                where (profiles.Contains(profileName) || profileName == "*")
                     && (!Conventions.TypeHasTags(type) || Conventions.TypeHasMatchingTags(type, TagsToMatch))
                 orderby type.FullName
                 select type.Assembly.CreateInstance(type.FullName) as IMigration;
