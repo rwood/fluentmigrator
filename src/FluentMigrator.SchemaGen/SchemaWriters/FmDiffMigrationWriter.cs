@@ -79,7 +79,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         #endregion
 
-        #region Emit Classes
+        #region Write Classes
 
         /// <summary>
         /// Writes migration classes.  Main entry point for this class.
@@ -89,7 +89,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         {
             step = options.StepStart;
 
-            WriteClass("Initial", () => WriteComment("Sets initial version to " + options.MigrationVersion + "." + step));
+            WriteMigrationClass("Initial", () => WriteComment("Sets initial version to " + options.MigrationVersion + "." + step));
 
             // TODO: Create new user defined DataTypes
 
@@ -107,28 +107,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             if (options.DropTables)
             {
                 // Drop tables in order of their FK dependency.
-                WriteClass("DropTables", DropTables, CantUndo);
+                WriteMigrationClass("DropTables", DropTables, CantUndo);
             }
 
             if (options.DropScripts)
             {
                 // Drop old SPs/Views/Functions
-                WriteClass("DropScripts", DropScripts, CantUndo);
+                WriteMigrationClass("DropScripts", DropScripts, CantUndo);
             }
 
             if (options.PostScripts)
             {
                 WriteSqlScriptClass("3_Post");
             }
-
-            // TODO: Drop old user defined DataTypes
-            // WriteClass("Data", "LoadSeedData", LoadSeedData, DropSeedData);
-
-            // TODO: Load/Update Demo Data (if tagged "Demo")
-            // WriteClass("Data", "LoadDemoData", LoadDemoData, DropDemoData);
-
-            // TODO: Load/Update Test Data (if tagged "Test")
-            // WriteClass("Test", "LoadTestData", LoadTestData, DropTestData);
 
             if (options.StepEnd != -1)
             {
@@ -137,7 +128,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 step = options.StepEnd;
             }
 
-            WriteClass("Final", () => WriteComment("Sets final version to " + options.MigrationVersion + "." + step));
+            WriteMigrationClass("Final", () => WriteComment("Sets final version to " + options.MigrationVersion + "." + step));
 
             return classPaths;
         }
@@ -155,7 +146,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         /// </param>
         /// <param name="addTags">Additional FluentMigrator Tags applied to the class</param> 
         /// <returns>true if a class was written</returns>
-        protected bool WriteClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addTags = null)
+        protected bool WriteMigrationClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addTags = null)
         {
             // If no code is generated for an Up() method => No class is emitted
             var upMethodCode = upMethod();
@@ -306,7 +297,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     return lines;
                 };
 
-            WriteClass(subfolder.Replace(" ",""), upMethod, CantUndo, tags);
+            WriteMigrationClass(subfolder.Replace(" ",""), upMethod, CantUndo, tags);
         }
 
         #region Drop Tables and Scripted Objects
@@ -389,11 +380,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 if (db1Tables.ContainsKey(newTable.Name))
                 {
                     TableDefinitionExt oldTable = db1Tables[newTable.Name];
-                    WriteClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable, perTableSqlDir));
+                    WriteMigrationClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable, perTableSqlDir));
                 }
                 else
                 {
-                    WriteClass("Create_" + table.Name, () => newTable.GetCreateCode());
+                    WriteMigrationClass("Create_" + table.Name, () => newTable.GetCreateCode());
                 }
             }
         }
