@@ -85,10 +85,15 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             AddLine(string.Format(format, args));
         }
 
-        public void WriteLines(IEnumerable<string> lines)
+        public void WriteLines(IEnumerable<string> lines, bool trim1st = false)
         {
             foreach (string line in lines)
             {
+                if (trim1st && line.Trim().Length == 0)
+                {
+                    trim1st = false;
+                    continue;
+                }
                 WriteLine(line);
             }
         }
