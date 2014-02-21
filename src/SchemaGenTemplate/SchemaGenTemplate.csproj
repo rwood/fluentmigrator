@@ -42,6 +42,7 @@
     <Compile Include="FM_Extensions\AutoReversingMigrationExt.cs" />
     <Compile Include="FM_Extensions\MigrationExt.cs" />
     <Compile Include="FM_Extensions\MigrationVersionAttribute.cs" />
+    <Compile Include="FM_Extensions\SqlScriptMigration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="VersionTable.cs.txt" />
   </ItemGroup>
