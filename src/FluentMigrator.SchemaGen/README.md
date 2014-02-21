@@ -5,15 +5,25 @@ It can be used to generate migrations for a new database **install** OR an **upg
 
 Generated classes are intended to be added a C# project that outputs a DLL that is executed by a [Fluent Migration Runner](https://github.com/schambers/fluentmigrator/wiki/Migration-Runners) such as Migrate.exe, NAnt task or MSBuild tasks.
 
-Features:
----------
+C# Project Template
+-------------------
 
-  * Generates a **full** or **upgrade** schema migration (tables, indexes, foriegn keys) based on existing SQL Server 2008+ databases.
+You should always use the provided **SchemaGenTemplate** C# project as a template for creating any new migration projects that will accepted generated migration classes.
+
+The C# migration classes output by the code generator inherit from MigrationExt and AutoReversingMigrationExt that in turn inherit from the Migration and AutoReversingMigration migration base classes supplied by the FM API. The C# **SchemaGenTemplate** project includes these extension classes and additional helper classes that the generated classes depend on.
+Classes included in this C# project template assume that the project root **namespace** is set to **Migrations**. 
+
+There are also a number of other enhancements to the original Fluent Migrator API that this tool depends on.
+
+Main Features:
+==============
+
+  * Code generation of classes that perform a **full** or **upgrade** schema migration (tables, indexes, foriegn keys) based on existing SQL Server 2008+ databases.
     * Generated schema can then be used to install / upgrade other database types supported by Fluent Migrator.
     * Can select included and excluded tables by name or pattern.
   * Generates a class per table ordered by FK dependency constraints. 
   * Migration class are number based a migration version: major.minor.patch.step 
-    * You supply the major.minor.patch  (e.g. "3.1.2")
+    * You supply the major.minor.patch  (e.g. **3.1.2**)
     * The step is generated and defines the execution order of the classes.
     * You can optionally start/end step number to support merging sets of generated classes.
     * Shows internal migration number as a comment. 
@@ -27,26 +37,19 @@ Features:
 	* Rebuilds index when index columns change type
     * Supports Clustered/Nonclustered Indexes
 	* Supports Index Fill Factor (Added WithOptions.Fill() method to FM API)
-  * SQL Scripts for Views, Stored Procedures, Functions, Data types, Seed Data and Custom Data Migrations
-    * Adds migrations that run SQL scripts to perform Pre, Post or Per table data migrations.
-    * Optionally loads SQL at run-time (best for development) OR embeds SQL scripts in C# code (best for deployment). 
-    * A simple tag based naming convention selects scripts to execute for each database, database type or software component.
-    * Pre and Post processing SQL.
-    * Post: Views, Stored Procedures, Functions, Data types
-    * Post: Seed Data, Demo Data, Test Data.
-    * Per table migration class: Data migration SQL scripts.
   * Specify output directory, class namespace, Fluent Migrator [Tag] attrtibutes.
     * Additional support classes are added in a generated project DLL.
     * Uses a MigrationVersion() class that defines the product version.
   * Source databases defined either using full connection string or just a localhost database name.
   * Includes several minor enhancements and fixes to Fluent Migrator API.
   * Emits IfNotDatabase("jet") conditions for indexes that match foriegn key constraints. 
-    * Jet (MS-Access) auto adds FK indexes so we don't want to add a duplicate index.
+    * Jet (MS-Access) auto adds FK indexes so this avoids adding a duplicate index.
     * Add IfNotDatabase() construct to FM API for this case.
   * Command line and MSBuild Task support.
 
-Schema Upgrade Features:
------------------------
+Schema Upgrades:
+===============
+
   * Generates Initial and Final migration classes that set Start / End migration version and step number. 
   * Generates a migration class per table that:
     * Adds new table columns, Removes old columns, Updates columns that change their type or properties
@@ -64,26 +67,98 @@ Schema Upgrade Features:
   * When a NULL-able table field becomes NOT NULL, optionally emits SQL to set NULL values to the column's DEFAULT value (if defined).
   * Imports or Embeds SQL scripts executed after new columns / indexes are added but before old columns are removed on each table.
 
-C# Project Template
--------------------
+Fluent Migrator API Changes
+---------------------------
 
-You should always use the provided **SchemaGenTemplate** C# project as a template for creating any new migration projects that will accepted generated migration classes.
+* Added Create.Index().WithOptions.Fill(fill_factor) 
+* Added Execute.ScriptDirectory() - Executes a directory of SQL scripts with optional script tag selection.  
 
-The C# migration classes output by the code generator inherit from MigrationExt and AutoReversingMigrationExt that in turn inherit from the Migration and AutoReversingMigration migration base classes supplied by the FM API. The C# **SchemaGenTemplate** project includes these extension classes and additional helper classes that the generated classes depend on.
+SQL Script execution
+--------------------
+Excutes custom SQL Scripts for Table migration, Views, Stored Procedures, Functions, Data types, Seed Data, Demo Data, Test Data.
 
-Classes included in this C# project template assume that the project root **namespace** is set to **Migrations**. 
+  * Adds migrations that run SQL scripts to perform Pre, Post or Per table data migrations.
+  * Optionally loads SQL at run-time (best for development) OR embeds SQL scripts in C# code (best for deployment). 
+
+SQL Script Tagging
+------------------
+
+  * A simple tag based naming convention selects scripts to execute for each database type, database instance or component feature.
+  * Allows reuse of SQL scripts that work in multiple database types or that need to be run in multiple database instances.
+  * Flexible file/folder struture that allows related scripts to be either grouped together (same directory) or split into directory hierarchy.
+  * Execution is ordered by full path name so dependency ordering can be controlled by file or folder naming.
+
+Example SQL Script Folder Structure
+-----------------------------------
+
+ * ```SQL/M1_Install/version/1_Pre/```
+   * Run prior to verion install. e.g. Create databases, configure logins.
+ * ```SQL/M2_Upgrade/<version>/1_Pre/```
+   * Run prior to version upgrade. Perform validation checks. Perform updates required to ensure schema changes can succeed.
+ * ```SQL/M1_Install/<version>/2_PerTable/<table>_<tags>.sql```  OR  ```M1_Install/<version>/2_PerTable/<tags>/<table>.sql``` 
+   * Per table script containing table name. Run as each new table is being Created on a new install.
+ * ```SQL/M2_Upgrade/<version>/2_PerTable/```
+   * Per table script containing table name. Run as each table is being Created or Updated during a database upgrade.
+   * To facilitate data migration during table updates, the table will contain both OLD and NEW columns.
+ * ```SQL/M3_Post/<version>/```
+   * Run after either Install of OR Upgrade to a given version.  
+   * Typically used to drop/recreate Views, Stored Procedures, Functions, Data types. Just create subfolder for each.
+   * Use tags to selectively delete/reinsert Seed Data, Demo Data, Test Data or Product Feature Data.
+   * Run post install checks and optimizations.
+
+ * Since scripts are executed in path name order we can create numbered subfolders to manage object dependencies:
+   * ```<dir>/D0/*.sql``` = Objects that have NO dependencies
+   * ```<dir>/D1/*.sql``` = Objects that depend on ```D0/*.sql``` 
+   * ```<dir>/D2/*.sql``` = Objects that depend on ```D1/*.sql```  etc.
+
+Generated C# Classes
+====================
+
+   * ```<version>```    = MigrationVersion MSBuild options or --version command line argument.  Example: "4.0.1"
+   * ```<fm-version>``` = Fluent Migrator version stored in VersionInfo table.   Example: "40000236"
+
+Install
+-------
+
+   * ```M1_Install/<version>/M<fm-version>_Inital.cs```` 
+     * Sets initial step number 
+   * ```M1_Install/<version>/M<fm-version>_Pre.cs```
+     * Runs ```SQL/M1_Install/<version>/1_Pre/```
+   * ```M1_Install/<version>/M<fm-version>_Create_<table>.cs```
+     * Runs ```SQL/M1_Install/<version>/2_PerTable/cr_<table>.sql```
+   * ```M1_Install/<version>/M<fm-version>_Post.cs```
+     * Runs ```SQL/M1_Install/<version>/3_Post/```
+   * ```M1_Install/<version>/M<fm-version>_Final.cs```      
+      * Sets final step number 
+
+Upgrade
+-------
+   * ```M2_Upgrade/<version>/M<fm-version>_Inital.cs```
+     * Sets initial step number 
+   * ```M2_Upgrade/<version>/M<fm-version>_Create_<table>.cs```
+     * ```SQL/M2_Upgrade/<version>/2_PerTable/cr_<table>.sql```
+   * ```M2_Upgrade/<version>/M<fm-version>_Upgrade_<table>.cs```
+     * Runs: ```SQL/M2_Upgrade/<version>/2_PerTable/up_<table>.sql```
+   * ```M2_Upgrade/<version>/M<fm-version>_Post.cs```
+     * Runs: ```SQL/M2_Upgrade/<version>/3_Post/```
+   * ```M2_Upgrade/<version>/M<fm-version>_Final.cs```
+      * Sets final step number 
+   
+   * ```M3_Post/<version>/<Profile>.cs```
+     * Create your own named [Profile] classes here that run ```SQL/M3_Post/<Profile>/*.sql```
+     * Project Template include **SqlScriptMigration** as a base class to simplify these classes.
 
 Command Line Options 
---------------------
+====================
 
  ```FluentMigrator.SchemaGen.EXE <options>```
 
 See the [Options.cs](Options.cs) for command line options and help documentation.
 
 MSBuild Task
-------------
+============
    
-  * See the [FmCodeGen.cs](MSBuild/FmCodeGen.cs) for **FmCodeGen** task options.
+  * See the [FmCodeGen.cs](MSBuild/FmCodeGen.cs) for **<FmCodeGen\>** task options.
     * MSBuild task options are documented in matching command options: [Options.cs](Options.cs).
   * Requires MSBuild.exe from .NET 3.5 or later:
     * ``` %WinDir%\Microsoft.NETFramework\v3.5\MSBuild.exe ``` 
@@ -131,29 +206,27 @@ Known Issues
    * Example: Migrating recusive data relationships.
  * When a column or table is renamed, we currently emit add/remove or drop/create commands which you may may need to replace these with Rename.Table() or Rename.Column()
    * There is no way that SchemaGen can safely know that this is what was intended. 
- * SQL Server Include columns in indexes are implemented by SqlServerSchemaReader not yet tested.
+ * SQL Server Include columns in indexes are implemented by SqlServerSchemaReader but not tested and not implemented by code gen.
  * When a field type is altered, we currently don't handle the case where this field is part of a foriegn key relation.
    * Requires one or more FKs to be dropped and two or more tables altered together before FKs are recreated.
+ * Executing each SQL directory maps to a single Migration class that is always performed as a single transaction that may fail due to transaction log limits.
+   * The workaround is to split up SQL scripts into subfolders each corresponding to a transaction and then run each subfolder in a separate Migration class with TransactionPerSession set to false.
+   * The Execute.ScriptDirectory() command includes the opton to not execute subfolders so we can just create subfolders for those scripts that require their own transaction.
+   * A future version of SchemaGen can implement this by optionally generating a class per script folder in it's own Migration class.
+   * We could perhaps introduce a "NEWTX" tag that runs a single script or folder in it's own Migration class.
 
 To Do
 -----
+
  * Example command line args and MSBuild scripts.
    * An MSBuild script that emits an enitire C# project and compiles it.
  * Unit Tests 
  * Need to check if a Primary Key is non-clustered and emit: 
    * Create.PrimaryKey("PK").OnTable("TestTable").Column("Id").NonClustered();
- * Support the option of emitting a single migration class (not hard to do with current implementation).
-Refactoring Wish List:
- * We always know a 'better way' after the deed is done :) . If I get around to it this what needs doing:
- * Split up FmDiffMigrationWriter into smaller component classes.
- * Rewrite FmDiffMigrationWriter.UpdateTable() to use an improved data structure that should make it simpler and more readable.
- * Revise text output implementation. Used IEnumerable<string> an another project to emit lines to great effect. 
 
 Future Ideas
 ------------
- * Might consider a two phase approach that emits differences as a data structure and then applies an ordering / grouping algorithm.  Groups become classes.
-   * This should support more complex cases involving order complexity.
-   * We're likely to find that some ordering contraints will depend on the database type.
+
  * Support selective differences so you can slice the changes into different phases.
    * Currently only support table include/exclude selection.
    * Object renaming only (Can then separate out Index/FK renaming changes from the 'real' schema changes).
@@ -162,6 +235,7 @@ Future Ideas
 
 Required Libs
 -------------
+
    PM> Install-Package CommandLineParser
 
 Fluent Migrator API Refs:
@@ -171,5 +245,6 @@ Fluent Migrator API Refs:
 
 License:
 -------
+
   * Copyright (C) 2014 Tony O'Hagan
   * [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0) 
