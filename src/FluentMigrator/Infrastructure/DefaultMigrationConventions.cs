@@ -132,7 +132,7 @@ namespace FluentMigrator.Infrastructure
 
         public static bool TypeHasMatchingTags(Type type, IEnumerable<string> tagsToMatch)
         {
-            var tags = type.GetAllAttributes<TagsAttribute>().SelectMany(x => x.TagNames).ToArray();
+            var tags = type.GetAllAttributes<TagsAttribute>().Where(x => x.TagNames != null).SelectMany(x => x.TagNames).ToArray();
 
             if (tags.Any() && !tagsToMatch.Any())
                 return false;
