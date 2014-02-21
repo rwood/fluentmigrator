@@ -41,12 +41,12 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         private string GetRelativePath(FileInfo file)
         {
-            return file.FullName.Replace(Environment.CurrentDirectory + "\\", "");
+            return file.FullName.Replace(options.SqlDirectory + "\\", "");
         }
 
         private string GetRelativePath(DirectoryInfo dir)
         {
-            return dir.FullName.Replace(Environment.CurrentDirectory + "\\", "");
+            return dir.FullName.Replace(options.SqlDirectory + "\\", "");
         }
 
         public CodeLines EmbedSql(string sqlStatement)
@@ -86,72 +86,75 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         {
             if (options.EmbedSql)
             {
-
-                string allLines = File.ReadAllText(sqlFile.FullName);
-                Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
-
-                lines.WriteComment(GetRelativePath(sqlFile));
-
-                foreach (var sqlStatment in goStatement.Split(allLines))
+                if (!sqlFile.Exists)
                 {
-                    lines.WriteLines(EmbedSql(sqlStatment));
+                    announcer.Emphasize(sqlFile.FullName + ": Import SQL script not found.");
                 }
-            }
-            else
-            {
-                lines.WriteLine("Execute.Script(\"{0}\");", GetRelativePath(sqlFile).Replace("\\", "\\\\"));   
-            }
-        }
-
-        public void ExecuteSqlDirectory(CodeLines lines, DirectoryInfo sqlDirectory)
-        {
-            if (options.EmbedSql)
-            {
-                foreach (var sqlFile in sqlDirectory.GetFiles("*.sql", SearchOption.AllDirectories).OrderBy(file => file.FullName))
+                else
                 {
-                    if (sqlFile.Length > 0)
+                    announcer.Say(sqlFile.FullName + ": Importing SQL script.");
+
+                    string allLines = File.ReadAllText(sqlFile.FullName);
+                    Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
+
+                    lines.WriteComment(GetRelativePath(sqlFile));
+
+                    foreach (var sqlStatment in goStatement.Split(allLines))
                     {
-                        lines.WriteComment(GetRelativePath(sqlFile));
-                        ExecuteSqlFile(lines, sqlFile);
+                        lines.WriteLines(EmbedSql(sqlStatment));
                     }
                 }
             }
             else
             {
-                // Runs MigrationExt.ExecuteScriptDirectory
-                lines.WriteLine("ExecuteScriptDirectory(\"{0}\");", GetRelativePath(sqlDirectory).Replace("\\", "\\\\"));
+                // Add even if file does not yet exist.
+                lines.WriteLine();
+                lines.WriteLine("Execute.Script(\"{0}\");", GetRelativePath(sqlFile).Replace("\\", "\\\\"));   
             }
         }
 
-        public DirectoryInfo GetSqlDirectory(string subfolder)
+        public void ExecuteSqlDirectory(CodeLines lines, string subfolder)
         {
-            string path = options.SqlDirectory;
-            if (path == null)
+            DirectoryInfo sqlDirectory = new DirectoryInfo(subfolder);
+            if (options.EmbedSql)
             {
-                path = Path.Combine("SQL", options.IsInstall ? "M2_Install" : "M2_Upgrade");
-                path = Path.Combine(path, options.MigrationVersion);
+                if (!sqlDirectory.Exists)
+                {
+                    announcer.Emphasize(sqlDirectory.FullName + ": SQL Script directory not found.");
+                }
+                {
+                    foreach (
+                        var sqlFile in
+                            sqlDirectory.GetFiles("*.sql", SearchOption.AllDirectories).OrderBy(file => file.FullName))
+                    {
+                        if (sqlFile.Length > 0)
+                        {
+                            lines.WriteComment(GetRelativePath(sqlFile));
+                            ExecuteSqlFile(lines, sqlFile);
+                        }
+                    }
+                }
             }
+            else
+            {
+                // CurrentDatabaseTag = Tag used to select script for database currently being migrated. 
+                // Implemented in Migrations.FM_Extensions.MigrationExt.CurrentDatabaseTag in SchemaGenTemplate.csproj project
 
-            return new DirectoryInfo(Path.Combine(path, subfolder));
+                // SQL script paths must be relaive to SQL directory.
+                // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
+                lines.WriteLine();
+                lines.WriteLine("Execute.ScriptDirectory(\"{0}\", SearchOption.AllDirectories, CurrentDatabaseTag);", GetRelativePath(sqlDirectory).Replace("\\", "\\\\"));
+            }
         }
 
-        public void MigrateData(CodeLines lines, DirectoryInfo perTableSqlDir, string tableName)
+        public void MigrateData(CodeLines lines, bool isCreate, string tableName)
         {
             if (options.PerTableScripts)
             {
-                Debug.Assert(perTableSqlDir != null);
-            }
-
-            if (options.SqlDirectory != null && perTableSqlDir != null)
-            {
-                string sqlFilePath = Path.Combine(perTableSqlDir.FullName, tableName + ".sql");
+                string sqlFilename = string.Format("{0}_{1}.sql", (isCreate ? "cr" : "up"), tableName);
+                string sqlFilePath = Path.Combine(options.SqlPerTableDirectory, sqlFilename);
                 var sqlFile = new FileInfo(sqlFilePath);
-
-                if (sqlFile.Exists)
-                {
-                    announcer.Say(sqlFile.FullName + ": Imported SQL script.");
-                    ExecuteSqlFile(lines, sqlFile);
-                }
+                ExecuteSqlFile(lines, sqlFile);
             }
         }
     }

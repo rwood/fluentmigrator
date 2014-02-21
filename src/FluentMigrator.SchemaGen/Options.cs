@@ -16,6 +16,7 @@
 //
 #endregion
 
+using System.IO;
 using CommandLine;
 using CommandLine.Text;
 
@@ -53,8 +54,13 @@ namespace FluentMigrator.SchemaGen
         bool DropTables { get; }
         bool SetNotNullDefault { get; }
 
+        // computed options
         bool IsInstall { get; } 
         bool IsUpgrade { get; }
+
+        string SqlPreDirectory { get; }
+        string SqlPerTableDirectory { get; }
+        string SqlPostDirectory { get; }
     }
 
     /// <summary>
@@ -79,16 +85,6 @@ namespace FluentMigrator.SchemaGen
         [Option("db2", Required = false, HelpText = "2nd SQL Server database name if generating migration code.")]
         public string Db2 { get; set; }
 
-        public bool IsInstall
-        {
-            get { return !string.IsNullOrEmpty(Db); }
-        }
-
-        public bool IsUpgrade
-        {
-            get { return !string.IsNullOrEmpty(Db1) && !string.IsNullOrEmpty(Db2); }
-        }
-        
         [Option("dir", DefaultValue = ".", HelpText = "class directory")]
         public string OutputDirectory { get; set; }
 
@@ -151,5 +147,36 @@ namespace FluentMigrator.SchemaGen
         {
             return HelpText.AutoBuild(this, (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
         }
+
+        #region Computed options
+
+        // TODO: Warning Duplicate code
+
+        public bool IsInstall
+        {
+            get { return !string.IsNullOrEmpty(Db); }
+        }
+
+        public bool IsUpgrade
+        {
+            get { return !string.IsNullOrEmpty(Db1) && !string.IsNullOrEmpty(Db2); }
+        }
+
+        public string SqlPreDirectory
+        {
+            get { return Path.Combine(SqlDirectory ?? "SQL", "1_Pre"); }
+        }
+
+        public string SqlPerTableDirectory
+        {
+            get { return Path.Combine(SqlDirectory ?? "SQL", "2_PerTable"); }
+        }
+
+        public string SqlPostDirectory
+        {
+            get { return Path.Combine(SqlDirectory ?? "SQL", "3_Post"); }
+        }
+
+        #endregion
     }
 }

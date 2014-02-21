@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using FluentMigrator.Runner;
 using FluentMigrator.SchemaGen.Extensions;
 using FluentMigrator.SchemaGen.Model;
@@ -77,6 +78,21 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             }
         }
 
+        private CodeLines WriteComment(string comment)
+        {
+            return new CodeLines("// " + comment);
+        }
+
+        private CodeLines ExecuteSqlDirectory(string sqlSubfolder)
+        {
+            var lines = new CodeLines();
+            if (options.SqlDirectory != null)
+            {
+                sqlFileWriter.ExecuteSqlDirectory(lines, sqlSubfolder);
+            }
+            return lines;
+        }
+
         #endregion
 
         #region Write Classes
@@ -91,15 +107,15 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             WriteMigrationClass("Initial", () => WriteComment("Sets initial version to " + options.MigrationVersion + "." + step));
 
-            // TODO: Create new user defined DataTypes
+            // An additional post processing folder "M3_Post" contains SQL that is run every time.
 
             if (options.PreScripts)
             {
-                WriteSqlScriptClass("1_Pre");
+                WriteMigrationClass("PreScripts", () => ExecuteSqlDirectory(options.SqlPreDirectory), CantUndo);
             }
 
             // Create/Update All tables/columns/indexes/foreign keys
-            CreateUpdateTables("2_PerTable");
+            CreateUpdateTables(options.SqlPerTableDirectory);
 
             // TODO: Drop/Create new or modified scripts (SPs/Views/Functions)
             // CreateUpdateScripts();
@@ -107,18 +123,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             if (options.DropTables)
             {
                 // Drop tables in order of their FK dependency.
-                WriteMigrationClass("DropTables", DropTables, CantUndo);
+                WriteMigrationClass("DropRemovedTables", DropRemovedTables, CantUndo);
             }
 
             if (options.DropScripts)
             {
                 // Drop old SPs/Views/Functions
-                WriteMigrationClass("DropScripts", DropScripts, CantUndo);
+                WriteMigrationClass("DropRemovedObjects", DropRemovedObjects, CantUndo);
             }
 
             if (options.PostScripts)
             {
-                WriteSqlScriptClass("3_Post");
+                // Post processing ProfileAttribute migration classes that always execute.
+                WriteMigrationClass("PostScripts", () => ExecuteSqlDirectory(options.SqlPostDirectory), CantUndo);
             }
 
             if (options.StepEnd != -1)
@@ -150,7 +167,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         {
             // If no code is generated for an Up() method => No class is emitted
             var upMethodCode = upMethod();
-            if (!upMethodCode.Any()) return false;
+            if (!upMethodCode.Any()) return false;  // = no class written
 
             var codeLines = new CodeLines();
 
@@ -186,7 +203,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 using (new Block(codeLines)) // namespace {}
                 {
                     codeLines.WriteLine("[MigrationVersion({0})]",
-                        options.MigrationVersion.Replace(".", ", ") + ", " + step);
+                                        options.MigrationVersion.Replace(".", ", ") + ", " + step);
 
                     string tags = options.Tags ?? "" + addTags ?? "";
                     if (!string.IsNullOrEmpty(tags))
@@ -200,7 +217,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                         codeLines.WriteLine("public override void Up()");
                         using (new Block(codeLines))
                         {
-                            codeLines.WriteLines(upMethodCode);
+                            codeLines.WriteLines(upMethodCode, true);
                         }
 
                         if (downMethod != null)
@@ -215,17 +232,15 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     }
                 }
 
-                step++;
+                step++; // Increment migration version step
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(classPath + ": Failed to render class file", ex);
+            }
 
-                using (var fs = new FileStream(classPath, FileMode.Create))
-                using (var writer = new StreamWriter(fs))
-                {
-                    foreach (string line in codeLines)
-                    {
-                        writer.WriteLine(line);
-                    }
-                }
-
+            try {
+                File.WriteAllLines(classPath, codeLines.ToArray(), Encoding.UTF8);
                 return true;
             }
             catch (Exception ex)
@@ -273,35 +288,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         #endregion
 
-        private CodeLines WriteComment(string comment)
-        {
-           return new CodeLines("// " + comment);
-        }
-
-        private void WriteSqlScriptClass(string subfolder, string tags = null)
-        {
-            var sqlDir = sqlFileWriter.GetSqlDirectory(subfolder);
-            if (!sqlDir.Exists)
-            {
-                announcer.Emphasize(sqlDir.FullName + ": SQL script folder not found.");
-                return;
-            }
-
-            Func<CodeLines> upMethod = () =>
-                {
-                    var lines = new CodeLines();
-                    if (options.SqlDirectory != null)
-                    {
-                        sqlFileWriter.ExecuteSqlDirectory(lines, sqlDir);
-                    }
-                    return lines;
-                };
-
-            WriteMigrationClass(subfolder.Replace(" ",""), upMethod, CantUndo, tags);
-        }
-
         #region Drop Tables and Scripted Objects
-        private CodeLines DropTables()
+        private CodeLines DropRemovedTables()
         {
             var lines = new CodeLines();
             
@@ -324,7 +312,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return lines;
         }
 
-        private CodeLines DropScripts()
+        private CodeLines DropRemovedObjects()
         {
             var lines = new CodeLines();
 
@@ -357,14 +345,12 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         {
             var db1Tables = db1.Tables;
 
-            DirectoryInfo perTableSqlDir = null;
             if (options.PerTableScripts)
             {
-                perTableSqlDir = sqlFileWriter.GetSqlDirectory(perTableSubfolder);
-                if (!perTableSqlDir.Exists)
+                var dir = new DirectoryInfo(options.SqlPerTableDirectory);
+                if (!dir.Exists)
                 {
-                    announcer.Emphasize(perTableSqlDir.FullName + ": SQL script folder not found.");
-                    return;
+                    announcer.Error(dir.FullName + ": SQL script folder not found.");
                 }
             }
 
@@ -380,13 +366,33 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 if (db1Tables.ContainsKey(newTable.Name))
                 {
                     TableDefinitionExt oldTable = db1Tables[newTable.Name];
-                    WriteMigrationClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable, perTableSqlDir));
+
+                    if (!WriteMigrationClass("Update_" + table.Name, () => UpdateTable(oldTable, newTable)))  // Did UpdateTable() detect schema changes and write a class file?
+                    {
+                        // Even if there were no changes schema changes we may still have an SQL script to run for this table.
+                        // If no SQL file exists then no class is created.
+                        WriteMigrationClass("Update_" + table.Name, () => MigrateData(false, newTable.Name));
+                    }
                 }
                 else
                 {
-                    WriteMigrationClass("Create_" + table.Name, () => newTable.GetCreateCode());
+                    WriteMigrationClass("Create_" + table.Name, () => CreateTable(newTable));
                 }
             }
+        }
+
+        private CodeLines MigrateData(bool isCreate, string tableName)
+        {
+            var lines = new CodeLines();
+            sqlFileWriter.MigrateData(lines, isCreate, tableName); // Execute.Sql() for table if any.
+            return lines;
+        }
+
+        private CodeLines CreateTable(TableDefinitionExt newTable)
+        {
+            CodeLines lines = newTable.GetCreateCode();                   // Create.Table() 
+            lines.WriteLines(MigrateData(true, newTable.Name)); // Execute.Sql() if table SQL file exists.
+            return lines;
         }
 
         /// <summary>
@@ -397,8 +403,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         /// </summary>
         /// <param name="oldTable"></param>
         /// <param name="newTable"></param>
-        /// <param name="schemaSqlFolder"></param>
-        private CodeLines UpdateTable(TableDefinitionExt oldTable, TableDefinitionExt newTable, DirectoryInfo perTableSqlDir)
+        /// <param name="perTableSqlDir"></param>
+        private CodeLines UpdateTable(TableDefinitionExt oldTable, TableDefinitionExt newTable)
         {
             var lines = new CodeLines();
 
@@ -441,7 +447,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // Note: The developer may inject custom data migration code here
             // We preserve old columns and indexes for this phase.
-            sqlFileWriter.MigrateData(lines, perTableSqlDir, newTable.Name);       // Run data migration SQL 
+            sqlFileWriter.MigrateData(lines, false, newTable.Name);                 // Run data migration SQL if any
 
             AddObjects(lines, fkDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED foreign keys
             AddObjects(lines, ixDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED indexes (excluding 1 column indexes)
