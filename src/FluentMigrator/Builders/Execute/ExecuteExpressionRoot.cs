@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using FluentMigrator.Expressions;
 using FluentMigrator.Infrastructure;
 
@@ -42,6 +43,17 @@ namespace FluentMigrator.Builders.Execute
         public void Script(string pathToSqlScript)
         {
             var expression = new ExecuteSqlScriptExpression { SqlScript = pathToSqlScript };
+            _context.Expressions.Add(expression);
+        }
+
+        public void ScriptDirectory(string pathToSqlScriptDirectory, SearchOption searchOption = SearchOption.AllDirectories, string[] scriptTags = null)
+        {
+            var expression = new ExecuteSqlScriptDirectoryExpression
+                {
+                    SqlScriptDirectory = pathToSqlScriptDirectory, 
+                    SearchOption = searchOption,
+                    ScriptTags = scriptTags
+                };
             _context.Expressions.Add(expression);
         }
 

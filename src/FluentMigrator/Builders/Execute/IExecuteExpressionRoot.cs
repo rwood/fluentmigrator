@@ -18,6 +18,7 @@
 
 using System;
 using System.Data;
+using System.IO;
 using FluentMigrator.Infrastructure;
 
 namespace FluentMigrator.Builders.Execute
@@ -25,8 +26,15 @@ namespace FluentMigrator.Builders.Execute
     public interface IExecuteExpressionRoot : IFluentSyntax
     {
         void Sql(string sqlStatement);
+        
         void Script(string pathToSqlScript);
+
+        void ScriptDirectory(string pathToSqlScriptDirectory, 
+            SearchOption searchOption = SearchOption.AllDirectories,
+            string[] scriptTags = null);
+
         void WithConnection(Action<IDbConnection, IDbTransaction> operation);
+        
         void EmbeddedScript(string EmbeddedSqlScriptName);
     }
 }
