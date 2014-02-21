@@ -9,13 +9,13 @@ namespace FluentMigrator.Runner
 {
     public class ProfileLoader : IProfileLoader
     {
-        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions, IEnumerable<string> tagsToMatch)
+        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions, IEnumerable<string> tagsToMatch = null)
         {
             Runner = runner;
             Assembly = runner.MigrationAssembly;
             Profile = runnerContext.Profile;
             Conventions = conventions;
-            TagsToMatch = tagsToMatch.ToArray();
+            TagsToMatch = (tagsToMatch ?? new string[] {}).ToArray();
 
             Initialize();
         }
