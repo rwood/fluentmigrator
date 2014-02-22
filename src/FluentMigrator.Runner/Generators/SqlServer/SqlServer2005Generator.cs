@@ -281,6 +281,7 @@ namespace FluentMigrator.Runner.Generators.SqlServer
         {
             if (expression.Index.FillFactor == null) return "";
             int fillFactor = expression.Index.FillFactor.Value;
+            // Map 0 to 100 as this will cause the SQL statement to fail.
             if (fillFactor == 0) fillFactor = 100;
             return string.Format(" WITH (FILLFACTOR = {0})", fillFactor);
         }

@@ -607,7 +607,8 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
                             IsClustered= g.Key.IsClustered,
                             IsUnique = g.Key.IsUnique,
                             IsPrimary = g.Key.IsPrimary,
-                            FillFactor = g.Key.FillFactor
+                            // Map 0 to 100 to avoid unecessary index updates.
+                            FillFactor = g.Key.FillFactor == 0 ? 100 : g.Key.FillFactor 
                         };
 
                 return indexes.ToList();
