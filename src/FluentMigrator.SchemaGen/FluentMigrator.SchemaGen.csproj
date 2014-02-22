@@ -96,6 +96,7 @@
     <None Include="codegen_tests.msbuild">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="SQL-EmbedOrLink.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Debug.txt" />
