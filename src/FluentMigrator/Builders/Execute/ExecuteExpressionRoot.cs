@@ -46,15 +46,26 @@ namespace FluentMigrator.Builders.Execute
             _context.Expressions.Add(expression);
         }
 
-        public void ScriptDirectory(string pathToSqlScriptDirectory, SearchOption searchOption = SearchOption.AllDirectories, string[] scriptTags = null)
+        public IExecuteScriptsInDirectoryWithSyntax ScriptsInDirectory(string pathToSqlScriptDirectory, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            var expression = new ExecuteSqlScriptDirectoryExpression
-                {
-                    SqlScriptDirectory = pathToSqlScriptDirectory, 
-                    SearchOption = searchOption,
-                    ScriptTags = scriptTags
-                };
+            var expression = new ExecuteScriptsInDirectoryExpression
+            {
+                SqlScriptDirectory = pathToSqlScriptDirectory,
+                SearchOption = searchOption
+            };
             _context.Expressions.Add(expression);
+            return new ExecuteScriptsInDirectoryExpressionBuilder(expression);
+        }
+
+        public IExecuteScriptsInDirectoryWithSyntax ScriptsInNestedDirectories(string pathToSqlScriptDirectory)
+        {
+            var expression = new ExecuteScriptsInDirectoryExpression
+            {
+                SqlScriptDirectory = pathToSqlScriptDirectory,
+                SearchOption = SearchOption.AllDirectories
+            };
+            _context.Expressions.Add(expression);
+            return new ExecuteScriptsInDirectoryExpressionBuilder(expression);
         }
 
         public void WithConnection(Action<IDbConnection, IDbTransaction> operation)

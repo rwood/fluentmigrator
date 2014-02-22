@@ -17,18 +17,30 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using FluentMigrator.Builders.Rename.Table;
 using FluentMigrator.Infrastructure;
 
 namespace FluentMigrator.Builders.Execute
 {
     public interface IExecuteExpressionRoot : IFluentSyntax
     {
-        void Sql(string sqlStatement);
-        void Script(string pathToSqlScript); 
-        void ScriptDirectory(string pathToSqlScriptDirectory, SearchOption searchOption = SearchOption.AllDirectories, string[] scriptTags = null);
         void WithConnection(Action<IDbConnection, IDbTransaction> operation);
         void EmbeddedScript(string EmbeddedSqlScriptName);
+
+        void Sql(string sqlStatement);
+        void Script(string pathToSqlScript);
+
+        IExecuteScriptsInDirectoryWithSyntax ScriptsInDirectory(string pathToSqlScriptDirectory, SearchOption searchOption = SearchOption.TopDirectoryOnly);
+        IExecuteScriptsInDirectoryWithSyntax ScriptsInNestedDirectories(string pathToSqlScriptDirectory);
+    }
+
+    public interface IExecuteScriptsInDirectoryWithSyntax
+    {
+        IExecuteScriptsInDirectoryWithSyntax WithPrefix(string prefix);
+        IExecuteScriptsInDirectoryWithSyntax WithTag(string tag);
+        IExecuteScriptsInDirectoryWithSyntax WithTags(IEnumerable<string> tags);
     }
 }
