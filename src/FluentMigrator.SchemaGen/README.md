@@ -54,7 +54,7 @@ Schema Upgrades:
   * Generates a migration class per table that:
     * Adds new table columns, Removes old columns, Updates columns that change their type or properties
     * Deletes removed indexes, Creates new indexes, 
-    * Deletes removed foriegn keys, Created new foriegn keys, 
+    * Deletes removed foriegn keys, Creates new foriegn keys, 
     * Recreates updated or renamed indexes (including indexes containing updated column types)
     * Recreates updated or renamed foriegn keys.
   * Optionally generates a "DropTable" migration.
@@ -96,9 +96,9 @@ Example SQL Script Folder Structure
  * ```SQL/M2_Upgrade/<version>/1_Pre/```
    * Run prior to version upgrade. Perform validation checks. Perform updates required to ensure schema changes can succeed.
  * ```SQL/M1_Install/<version>/2_PerTable/<table>_<tags>.sql```  OR  ```M1_Install/<version>/2_PerTable/<tags>/<table>.sql``` 
-   * Per table script containing table name. Run as each new table is being Created on a new install.
+   * Per table scripts containing table name. Run as each new table is being **created** on a new **database install**.
  * ```SQL/M2_Upgrade/<version>/2_PerTable/```
-   * Per table script containing table name. Run as each table is being Created or Updated during a database upgrade.
+   * Per table script containing table name. Run as each table is being **created** or **updated** during a **database upgrade**.
    * To facilitate data migration during table updates, the table will contain both OLD and NEW columns.
  * ```SQL/M3_Post/<version>/```
    * Run after either Install of OR Upgrade to a given version.  
