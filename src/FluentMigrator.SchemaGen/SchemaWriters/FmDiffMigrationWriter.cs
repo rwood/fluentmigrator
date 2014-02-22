@@ -83,16 +83,6 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return new CodeLines("// " + comment);
         }
 
-        private CodeLines ExecuteSqlDirectory(string sqlSubfolder)
-        {
-            var lines = new CodeLines();
-            if (options.SqlDirectory != null)
-            {
-                sqlFileWriter.ExecuteSqlDirectory(lines, sqlSubfolder);
-            }
-            return lines;
-        }
-
         #endregion
 
         #region Write Classes
@@ -111,7 +101,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             if (options.PreScripts)
             {
-                WriteMigrationClass("PreScripts", () => ExecuteSqlDirectory(options.SqlPreDirectory), CantUndo);
+                WriteMigrationClass("PreScripts", () => sqlFileWriter.ExecuteSqlDirectory(options.SqlPreDirectory), CantUndo);
             }
 
             // Create/Update All tables/columns/indexes/foreign keys
@@ -134,8 +124,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             if (options.PostScripts)
             {
-                // Post processing ProfileAttribute migration classes that always execute.
-                WriteMigrationClass("PostScripts", () => ExecuteSqlDirectory(options.SqlPostDirectory), CantUndo);
+                // Post processing ProfileAttribute migration classes that always execute.                
+                WriteMigrationClass("PostScripts", () => sqlFileWriter.ExecuteSqlDirectory(options.SqlPostDirectory), CantUndo);
             }
 
             if (options.StepEnd != -1)
@@ -294,6 +284,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             var lines = new CodeLines();
             
             // TODO: Currently ignoring Schema name for table objects.
+
             var db1FkOrder = db1.TablesInForeignKeyOrder(false); // descending order
 
             var removedTableNames = db1.Tables.Keys.Except(db2.Tables.Keys).ToList();
@@ -371,7 +362,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     {
                         // Even if there were no changes schema changes we may still have an SQL script to run for this table.
                         // If no SQL file exists then no class is created.
-                        WriteMigrationClass("Update_" + table.Name, () => MigrateData(false, newTable.Name));
+                        WriteMigrationClass("Update_" + table.Name, () => sqlFileWriter.ExecutePerTableSqlScript(false, newTable.Name));
                     }
                 }
                 else
@@ -381,17 +372,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             }
         }
 
-        private CodeLines MigrateData(bool isCreate, string tableName)
-        {
-            var lines = new CodeLines();
-            sqlFileWriter.MigrateData(lines, isCreate, tableName); // Execute.Sql() for table if any.
-            return lines;
-        }
-
         private CodeLines CreateTable(TableDefinitionExt newTable)
         {
-            CodeLines lines = newTable.GetCreateCode();                   // Create.Table() 
-            lines.WriteLines(MigrateData(true, newTable.Name)); // Execute.Sql() if table SQL file exists.
+            CodeLines lines = newTable.GetCreateCode();                                    // Create.Table() 
+            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScript(true, newTable.Name)); // Execute.Sql() if table SQL file exists.
             return lines;
         }
 
@@ -447,7 +431,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // Note: The developer may inject custom data migration code here
             // We preserve old columns and indexes for this phase.
-            sqlFileWriter.MigrateData(lines, false, newTable.Name);                 // Run data migration SQL if any
+            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScript(false, newTable.Name));    // Run data migration SQL if any
 
             AddObjects(lines, fkDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED foreign keys
             AddObjects(lines, ixDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED indexes (excluding 1 column indexes)

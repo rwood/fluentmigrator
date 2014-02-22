@@ -33,6 +33,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         private readonly IOptions options;
         private readonly IAnnouncer announcer;
 
+        // Property of MigrateExt class used to identify the current database script tag at run-time.
+        private const string CurrentDatabaseTag = "this.CurrentDatabaseTag";
+
         public SqlFileWriter(IOptions options, IAnnouncer announcer)
         {
             this.options = options;
@@ -113,49 +116,68 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             }
         }
 
-        public void ExecuteSqlDirectory(CodeLines lines, string subfolder)
+        public CodeLines ExecuteSqlDirectory(string subfolder)
         {
-            DirectoryInfo sqlDirectory = new DirectoryInfo(subfolder);
-            if (options.EmbedSql)
+            var lines = new CodeLines();
+            if (options.SqlDirectory != null)
             {
-                if (!sqlDirectory.Exists)
+                DirectoryInfo sqlDirectory = new DirectoryInfo(subfolder);
+                if (options.EmbedSql)
                 {
-                    announcer.Emphasize(sqlDirectory.FullName + ": SQL Script directory not found.");
-                }
-                {
-                    foreach (
-                        var sqlFile in
-                            sqlDirectory.GetFiles("*.sql", SearchOption.AllDirectories).OrderBy(file => file.FullName))
+                    if (!sqlDirectory.Exists)
                     {
-                        if (sqlFile.Length > 0)
+                        announcer.Emphasize(sqlDirectory.FullName + ": SQL Script directory not found.");
+                    }
+                    {
+                        // TODO: Needs to support SQL file tagging
+                        foreach (var sqlFile in sqlDirectory.GetFiles("*.sql", SearchOption.AllDirectories).OrderBy(file => file.FullName))
                         {
-                            lines.WriteComment(GetRelativePath(sqlFile));
-                            ExecuteSqlFile(lines, sqlFile);
+                            if (sqlFile.Length > 0)
+                            {
+                                lines.WriteComment(GetRelativePath(sqlFile));
+                                ExecuteSqlFile(lines, sqlFile);
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                // CurrentDatabaseTag = Tag used to select script for database currently being migrated. 
-                // Implemented in Migrations.FM_Extensions.MigrationExt.CurrentDatabaseTag in SchemaGenTemplate.csproj project
+                else
+                {
+                    // CurrentDatabaseTag = Tag used to select script for database currently being migrated. 
+                    // Implemented in Migrations.FM_Extensions.MigrationExt.CurrentDatabaseTag in SchemaGenTemplate.csproj project
 
-                // SQL script paths must be relaive to SQL directory.
-                // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
-                lines.WriteLine();
-                lines.WriteLine("Execute.ScriptDirectory(\"{0}\", SearchOption.AllDirectories, CurrentDatabaseTag);", GetRelativePath(sqlDirectory).Replace("\\", "\\\\"));
+                    // SQL script paths must be relaive to SQL directory.
+                    // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
+                    lines.WriteLine();
+                    lines.WriteLine("Execute.ScriptDirectory(\"{0}\", SearchOption.AllDirectories, {1});", 
+                        GetRelativePath(sqlDirectory).Replace("\\", "\\\\"), CurrentDatabaseTag);
+                }
             }
+            return lines;
         }
 
-        public void MigrateData(CodeLines lines, bool isCreate, string tableName)
+        public CodeLines ExecutePerTableSqlScript(bool isCreate, string tableName)
         {
+            CodeLines lines = new CodeLines();
             if (options.PerTableScripts)
             {
-                string sqlFilename = string.Format("{0}_{1}.sql", (isCreate ? "cr" : "up"), tableName);
+                if (options.EmbedSql)
+                {
+                }
+                else
+                {
+
+                }
+
+                // TODO: Needs to support SQL file tagging.
+                // We can use the tags on the SQL files to discover the custom tags being used and generate the conditions on .
+
+                // For now we only support SQL Server - hence the "_SS" suffix
+                string sqlFilename = string.Format("{0}_{1}_SS.sql", (isCreate ? "cr" : "up"), tableName);
                 string sqlFilePath = Path.Combine(options.SqlPerTableDirectory, sqlFilename);
                 var sqlFile = new FileInfo(sqlFilePath);
                 ExecuteSqlFile(lines, sqlFile);
             }
+            return lines;
         }
     }
 }

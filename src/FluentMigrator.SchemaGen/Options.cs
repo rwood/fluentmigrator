@@ -124,7 +124,7 @@ namespace FluentMigrator.SchemaGen
         [Option("set-not-null-default", DefaultValue = false, HelpText = "When a column NULL -> NOT NULL and has a default value, runs SQL to set the new default on all NULL values")]
         public bool SetNotNullDefault { get; set; }
 
-        [Option("sql-dir", DefaultValue = null, HelpText = "Import SQL script directory (Default is 'SQL').")]
+        [Option("sql-dir", DefaultValue = "SQL", HelpText = "SQL script directory .")]
         public string SqlDirectory { get; set; }
 
         [Option("embed-sql", DefaultValue = true, HelpText = "If true, embeds SQL scripts into the migration class. Otherwise, links to the SQL file path. Tip: Set to false during development, then true when deploying or when building for a specific database type.")]
