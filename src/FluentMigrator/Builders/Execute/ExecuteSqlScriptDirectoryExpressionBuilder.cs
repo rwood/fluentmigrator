@@ -31,5 +31,12 @@ namespace FluentMigrator.Builders.Execute
             }
             return this;
         }
+
+        public IExecuteScriptsInDirectoryWithSyntax WithGos()
+        {
+            Expression.SplitGO = true;
+            return this;
+        }
+
     }
 }

@@ -39,8 +39,37 @@ namespace FluentMigrator.Builders.Execute
 
     public interface IExecuteScriptsInDirectoryWithSyntax
     {
+        /// <summary>
+        /// Only execute SQL script file names that start with a prefix (usually action + object name)
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
         IExecuteScriptsInDirectoryWithSyntax WithPrefix(string prefix);
+
+        /// <summary>
+        /// Only execute SQL script file names include a tag in their folder path or as a file name suffix.
+        /// Examples: TAG/file.sql OR file.TAG.sql OR update_my_table1.TAG1.TAG2.sql
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         IExecuteScriptsInDirectoryWithSyntax WithTag(string tag);
+
+        /// <summary>
+        /// Only execute SQL script file names include a all of the tag in their folder path or as a file name suffix.
+        /// Examples: All of these SQL files are tagged with "TAG1" and "TAG2"
+        /// TAG1.TAG2/file.sql
+        /// TAG1/file.TAG2.sql
+        /// file.TAG1.TAG2.sql
+        /// file.TAG2.TAG1.sql
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <returns></returns>
         IExecuteScriptsInDirectoryWithSyntax WithTags(IEnumerable<string> tags);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IExecuteScriptsInDirectoryWithSyntax WithGos();
     }
 }
