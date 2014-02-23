@@ -8,6 +8,12 @@ using FluentMigrator.SchemaGen.SchemaWriters;
 
 namespace FluentMigrator.SchemaGen.SchemaReaders
 {
+    public class DbObjectName
+    {
+        public string SchemaName { get; set; }
+        public string Name { get; set; }
+    }
+
     public interface IDbSchemaReader
     {
         IDictionary<string, int> TablesInForeignKeyOrder(bool ascending);
@@ -15,10 +21,10 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
 
         IDictionary<string, TableDefinitionExt> Tables { get; }
 
-        IEnumerable<string> UserDefinedDataTypes { get; }
-        IEnumerable<string> UserDefinedFunctions { get; }
-        IEnumerable<string> Views { get; }
-        IEnumerable<string> StoredProcedures { get; }
+        IEnumerable<DbObjectName> UserDefinedDataTypes { get; }
+        IEnumerable<DbObjectName> UserDefinedFunctions { get; }
+        IEnumerable<DbObjectName> Views { get; }
+        IEnumerable<DbObjectName> StoredProcedures { get; }
 
         DataSet ReadTableData(string tableName);
     }

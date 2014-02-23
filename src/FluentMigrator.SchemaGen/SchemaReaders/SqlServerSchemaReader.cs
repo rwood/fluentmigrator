@@ -248,18 +248,18 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             return tables;
         }
 
-        protected IEnumerable<string> ApplyTableFilter(IEnumerable<string> tableNames)
+        protected IEnumerable<DbObjectName> ApplyTableFilter(IEnumerable<DbObjectName> tableNames)
         {
             if (options.IncludeTables != null)
             {
                 var pattern = MapFilter(options.IncludeTables);
-                tableNames = tableNames.Where(name => pattern.IsMatch(name));
+                tableNames = tableNames.Where(objName => pattern.IsMatch(objName.Name));
             }
 
             if (options.ExcludeTables != null)
             {
                 var pattern = MapFilter(options.ExcludeTables);
-                tableNames = tableNames.Where(name => !pattern.IsMatch(name));
+                tableNames = tableNames.Where(objName => !pattern.IsMatch(objName.Name));
             }
 
             return tableNames;
@@ -281,37 +281,42 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             }
         }
 
-        public IEnumerable<string> TableNames
+        public IEnumerable<DbObjectName> TableNames
         {
-            get { return ApplyTableFilter(GetNameList("SELECT name FROM sys.tables WHERE type = 'U' ORDER BY name")); }
+            get { return ApplyTableFilter(GetNameList("SELECT SCHEMA_NAME(schema_id) as schema_name, name FROM sys.tables WHERE type = 'U' ORDER BY schema_name, name")); }
         }
 
-        public IEnumerable<string> UserDefinedDataTypes
+        public IEnumerable<DbObjectName> UserDefinedDataTypes
         {
-            get { return GetNameList("SELECT name FROM sys.procedures WHERE LEFT(name, 3) NOT IN ('sp_', 'xp_', 'ms_', 'dt_') ORDER BY name"); }
+            get { return GetNameList("SELECT SCHEMA_NAME(schema_id) as schema_name, name FROM sys.types WHERE is_user_defined = 1 ORDER BY schema_name, name"); }
         }
 
-        public IEnumerable<string> UserDefinedFunctions
+        public IEnumerable<DbObjectName> UserDefinedFunctions
         {
-            get { return GetNameList("SELECT specific_name AS name FROM information_schema.routines WHERE routine_type = 'FUNCTION' ORDER BY name"); }
+            get { return GetNameList("SELECT SCHEMA_NAME(schema_id) AS schema_name, name AS function_name, * FROM sys.objects WHERE type_desc LIKE '%FUNCTION' and is_ms_shipped = 0 ORDER AND name <> 'fn_diagramobjects' BY schema_name, name"); }
         }
 
-        public IEnumerable<string> StoredProcedures
+        public IEnumerable<DbObjectName> StoredProcedures
         {
-            get { return GetNameList("SELECT specific_name AS name FROM information_schema.routines WHERE routine_type = 'PROCEDURE' AND Left(specific_name, 3) NOT IN ('sp_', 'xp_', 'ms_', 'dt_') ORDER BY name"); }
+            get { return GetNameList("SELECT SCHEMA_NAME(schema_id) as schema_name, name FROM sys.procedures WHERE LEFT(name, 3) NOT IN ('sp_', 'xp_', 'ms_', 'dt_') ORDER BY schema_name, name"); }
         }
 
-        public IEnumerable<string> Views
+        public IEnumerable<DbObjectName> Views
         {
-            get { return GetNameList("SELECT table_name AS name FROM information_schema.views ORDER BY name"); }
+            get { return GetNameList("SELECT SCHEMA_NAME(schema_id) as schema_name, name FROM sys.views ORDER BY schema_name, name"); }
         }
 
-        private IEnumerable<string> GetNameList(string query)
+        private IEnumerable<DbObjectName> GetNameList(string query)
         {
             using (DataSet ds = Read(query))
             using (DataTable dt = ds.Tables[0])
             {
-                return (from row in dt.Rows.Cast<DataRow>() select row["name"].ToString()).ToList();
+                return (from row in dt.Rows.Cast<DataRow>()
+                        select new DbObjectName
+                        {
+                            SchemaName = row["schema_name"].ToString(),
+                            Name = row["name"].ToString()
+                        }).ToList();
             }
         }
 

@@ -34,11 +34,11 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             return new TableDefinitionExt[] { };
         }
 
-        public IEnumerable<string> TableNames { get { return new string[]{}; } }
-        public IEnumerable<string> UserDefinedDataTypes { get { return new string[] { }; } }
-        public IEnumerable<string> UserDefinedFunctions { get { return new string[] { }; } }
-        public IEnumerable<string> Views { get { return new string[] { }; } }
-        public IEnumerable<string> StoredProcedures { get { return new string[] { }; } }
+        public IEnumerable<DbObjectName> TableNames { get { return new DbObjectName[]{}; } }
+        public IEnumerable<DbObjectName> UserDefinedDataTypes { get { return new DbObjectName[] { }; } }
+        public IEnumerable<DbObjectName> UserDefinedFunctions { get { return new DbObjectName[] { }; } }
+        public IEnumerable<DbObjectName> Views { get { return new DbObjectName[] { }; } }
+        public IEnumerable<DbObjectName> StoredProcedures { get { return new DbObjectName[] { }; } }
         
         public DataSet ReadTableData(string tableName) 
         {
