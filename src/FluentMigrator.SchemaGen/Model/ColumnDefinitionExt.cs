@@ -32,6 +32,12 @@ namespace FluentMigrator.SchemaGen.Model
         public virtual string SchemaName { get; set; }
         public virtual string IndexName { get; set; }
 
+        private string InSchema(string schema)
+        {
+            if (string.IsNullOrEmpty(schema) || schema == "dbo") return "";
+            return string.Format(".InSchema(\"{0}\")", schema);
+        }
+
         public string FQName
         {
             get { return Name; }
@@ -44,7 +50,7 @@ namespace FluentMigrator.SchemaGen.Model
 
         public string DeleteCode
         {
-            get { return string.Format("Delete.Column(\"{0}\").FromTable(\"{1}\").InSchema(\"{2}\");", Name, TableName, SchemaName); }
+            get { return string.Format("Delete.Column(\"{0}\").FromTable(\"{1}\"){2};", Name, TableName, InSchema(SchemaName)); }
         }
 
         public string DefinitionCode
