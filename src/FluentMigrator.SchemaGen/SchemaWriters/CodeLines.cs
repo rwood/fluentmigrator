@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentMigrator.SchemaGen.Extensions;
 
 namespace FluentMigrator.SchemaGen.SchemaWriters
 {
@@ -38,6 +39,14 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         public CodeLines(string format, params object[] args)
         {
             AddLine(string.Format(format, args));
+        }
+
+        public override string ToString()
+        {
+            return "new string[] {"
+                + this.Select(t => "@\"" + t.Replace("\"", "\"\"") + '"')
+                .StringJoin("," + Environment.NewLine)
+            + '}';
         }
 
         public void Indent(int by = 1)

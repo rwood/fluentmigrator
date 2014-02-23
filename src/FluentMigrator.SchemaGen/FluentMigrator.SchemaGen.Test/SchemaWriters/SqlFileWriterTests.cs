@@ -32,25 +32,16 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         public void CanEmbedSql()
         {
             CodeLines lines = writer.EmbedSql("DROP TABLE [Users]");
-            lines.Any().ShouldBe(true);
-            lines.Select(l => l.Trim())
-                .ShouldBe(new [] {
-                    "Execute.Sql(@\"DROP TABLE [Users]\");"
-                });
+            lines.Count().ShouldBe(1);
+            lines.First().ShouldBe("Execute.Sql(@\"DROP TABLE [Users]\");");
         }
 
         [Test]
         public void CanEmbedSqlFile()
         {
             CodeLines lines = writer.EmbedSqlFile(new FileInfo(@"SQL\sample0.sql"));
-            lines.Any().ShouldBe(true);
-
-            Debug.Write(lines.StringJoin("\n"));
-
-            lines.Select(l => l.Trim())
-                .ShouldBe(new[] {
-                    "Execute.Sql(@\"DROP TABLE [Dead]\");"
-                });
+            lines.Count().ShouldBe(1);
+            lines.First().ShouldBe("Execute.Sql(@\"DROP TABLE [Users]\");");
         }
 
         [Test]
