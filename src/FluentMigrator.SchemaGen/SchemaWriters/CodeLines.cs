@@ -45,17 +45,22 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             indent += by;
         }
 
-        public void Block(CodeLines lines, Func<CodeLines> fnBlock, string blockStatement = "")
+        public void Block(Func<CodeLines> fnBlock)
         {
-            if (blockStatement != String.Empty)
-                lines.WriteLine(blockStatement + " {");
-            else
-                lines.WriteLine("{");
-
+            WriteLine("{");
             Indent();
-            lines.WriteLines(fnBlock());
+            WriteLines(fnBlock());
             Indent(-1);
-            lines.WriteLine("}");
+            WriteLine("}");
+        }
+
+        public void Block(string blockStatement, Func<CodeLines> fnBlock)
+        {
+            WriteLine(blockStatement + " {");
+            Indent();
+            WriteLines(fnBlock());
+            Indent(-1);
+            WriteLine("}");
         }
 
         private string[] SplitCodeLines(string codeText)

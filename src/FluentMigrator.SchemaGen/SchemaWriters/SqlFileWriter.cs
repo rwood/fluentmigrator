@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         private readonly IAnnouncer announcer;
 
         // Property of MigrateExt class used to identify the current database script tag at run-time.
-        private const string DbTagPropertyName = "GetCurrentDatabaseTag()";
+        private const string CallGetDbTag = "this.GetDbTag()";
 
         public SqlFileWriter(IOptions options, IAnnouncer announcer)
         {
@@ -134,6 +135,27 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             }
         }
 
+        private CodeLines EmbedTaggedSqlDirectory(DirectoryInfo dir)
+        {
+            var lines = new CodeLines();
+
+            foreach (var subDir in dir.GetDirectories().OrderBy(x => x.Name))
+            {
+                DirectoryInfo subDir1 = subDir;
+                IEnumerable<string> tags = subDir.Name.Split('.');
+                lines.WriteLines(GetIfStatementWithTags(tags, () => EmbedTaggedSqlDirectory(subDir1)));   // recursion
+            }
+
+            foreach (var file in dir.GetFiles("*.sql", SearchOption.TopDirectoryOnly).OrderBy(x => x.Name))
+            {
+                FileInfo file1 = file;
+                IEnumerable<string> tags = file.Name.Split('.').Skip(1).Where(x => x.ToLower() != "sql");
+                lines.WriteLines(GetIfStatementWithTags(tags, () => EmbedSqlFile(file1)));
+            }
+
+            return lines;
+        }
+
         public CodeLines ExecuteSqlDirectory(string subfolder)
         {
             var lines = new CodeLines();
@@ -147,14 +169,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                         announcer.Emphasize(sqlDirectory.FullName + ": SQL Script directory not found.");
                     }
                     {
-                        // TODO: Needs to support SQL file tagging
-
-                        foreach (var sqlFile in (from file in sqlDirectory.GetFiles("*.sql", SearchOption.AllDirectories) 
-                                                 where file.Length > 0 orderby file.FullName select file))
-                        {
-                            lines.WriteComment(GetRelativePath(sqlFile));
-                            ExecuteSqlFile(lines, sqlFile);
-                        }
+                        EmbedTaggedSqlDirectory(sqlDirectory);
                     }
                 }
                 else
@@ -165,20 +180,44 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     // SQL script paths must be relaive to SQL directory.
                     // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
                     lines.WriteLine();
-                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithTag({1});", 
-                        GetRelativePath(sqlDirectory).Replace("\\", "\\\\"), DbTagPropertyName);
+                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithTag({1}).WithGos();", 
+                        GetRelativePath(sqlDirectory).Replace("\\", "\\\\"), CallGetDbTag);
                 }
             }
             return lines;
         }
 
-        private string[] GetTagsOnPerTableFile(FileInfo file, string scriptPrefix)
+        private IEnumerable<string> GetFilePathTags(string relPath, string scriptPrefix)
         {
-            // Get a path relative to the PerTable directory
-            string relPath = file.FullName.Replace(options.PerTableScripts+ "\\", "");
+            // Split path into tags and remove file name prefix and .sql file extension.
+            return from tag in relPath.Replace("\\", ".").Split('.')
+                   let ltag = tag.ToLower()
+                   where ltag != scriptPrefix.ToLower() && ltag != "sql"
+                   select tag;
+        }
 
-            // Remove the action + table name prefix and split it into tags.
-            return relPath.Replace(scriptPrefix, "").Replace(".sql", "").Replace(".SQL", "").Replace("\\", "_").Split('_');
+        private CodeLines GetIfStatementWithTags(IEnumerable<string> fileTags, Func<CodeLines> fnEmedSql)
+        {
+            var lines = new CodeLines();
+            string[] tags = fileTags.ToArray();
+ 
+            CodeLines sqlLines = fnEmedSql();
+            if (sqlLines.Any())
+            {
+                lines.WriteLine();
+
+                if (!tags.Any()) // filename: cr_<table>.sql or up_<table>.sql
+                {
+                    lines.WriteLines(sqlLines);
+                }
+                else
+                {
+                    // Example: if (this.GetCurrentDatabaseTag() == "TAG1" || this.GetCurrentDatabaseTag() == "TAG2") { ... embed sql ... }
+                    string condition = tags.Select(tag => string.Format("{0} == \"{1}\"", CallGetDbTag, tag)).StringJoin(" || ");
+                    lines.Block(string.Format("if ({0}) {{", condition), () => sqlLines);
+                }
+            }
+            return lines;
         }
 
         public virtual CodeLines ExecutePerTableSqlScripts(bool isCreate, string tableName)
@@ -196,36 +235,26 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 if (options.EmbedSql)
                 {
                     // Find all the scripts for this table
-                    var files = perTableDir.GetFiles(scriptPrefix + "*.sql", SearchOption.AllDirectories).Where(file => file.Length > 0).ToArray();
+                    var files = (from file in perTableDir.GetFiles(scriptPrefix + "*.sql", SearchOption.AllDirectories)
+                                where file.Length > 0 orderby file.FullName select file);
                     
-                    // Generate condition to test for each tag used on the file.
                     foreach (var file in files)
                     {
-                        string[] fileTags = GetTagsOnPerTableFile(file, scriptPrefix);
-                        
-                        CodeLines sqlLines = EmbedSqlFile(file);
-                        if (fileTags.Length == 0) // filename: cr_<table>.sql or up_<table>.sql
-                        {
-                            lines.WriteLines(sqlLines);
-                        }
-                        else
-                        {
-                            // Test if DbTagPropertyName matches one of the file's tags.
-                            string condition = fileTags.Select(tag => string.Format("{0} == \"{1}\"", DbTagPropertyName, tag)).StringJoin(" || ");
+                        // Get a path relative to the PerTable directory
+                        string relPath = file.FullName.Replace(options.PerTableScripts + "\\", "");
 
-                            lines.WriteLine(string.Format("if ({0}) {{", condition));
-                            lines.Indent();
-                            lines.WriteLines(sqlLines);
-                            lines.Indent(-1);
-                            lines.WriteLine("}");
-                        }
+                        var fileTags = GetFilePathTags(relPath, scriptPrefix);
+
+                        // Generates if(tags) {} condition to test for each tag used in SQL files.
+                        FileInfo file1 = file;
+                        lines.WriteLines(GetIfStatementWithTags(fileTags, () => EmbedSqlFile(file1)));
                     }
                 }
                 else
                 {
                     lines.WriteLine();
-                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithPrefix(\"{1}\").WithTag({2});",
-                         perTableDirRel, scriptPrefix, DbTagPropertyName);
+                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithPrefix(\"{1}\").WithTag({2}).WithGos();",
+                         perTableDirRel, scriptPrefix, CallGetDbTag);
                 }
             }
 
