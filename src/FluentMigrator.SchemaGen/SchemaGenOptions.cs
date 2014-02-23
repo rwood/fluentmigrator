@@ -41,7 +41,7 @@ namespace FluentMigrator.SchemaGen
         string IncludeTables { get; }
         string ExcludeTables { get; }
 
-        string SqlDirName { get; }
+        string SqlDir { get; }
         bool EmbedSql { get; }
 
         bool PreScripts { get; }
@@ -126,7 +126,7 @@ namespace FluentMigrator.SchemaGen
         public bool SetNotNullDefault { get; set; }
 
         [Option("sql-dir", DefaultValue = "SQL", HelpText = "SQL script directory .")]
-        public string SqlDirName { get; set; }
+        public string SqlDir { get; set; }
 
         [Option("embed-sql", DefaultValue = true, HelpText = "If true, embeds SQL scripts into the migration class. Otherwise, links to the SQL file path. Tip: Set to false during development, then true when deploying or when building for a specific database type.")]
         public bool EmbedSql { get; set; }
@@ -165,22 +165,22 @@ namespace FluentMigrator.SchemaGen
 
         public DirectoryInfo SqlDirectory
         {
-            get { return new DirectoryInfo(SqlDirName); }
+            get { return new DirectoryInfo(SqlDir); }
         }
 
         public DirectoryInfo SqlPreDirectory
         {
-            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "1_Pre")); }
+            get { return new DirectoryInfo(Path.Combine(SqlDir ?? "SQL", "1_Pre")); }
         }
 
         public DirectoryInfo SqlPerTableDirectory
         {
-            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "2_PerTable")); }
+            get { return new DirectoryInfo(Path.Combine(SqlDir ?? "SQL", "2_PerTable")); }
         }
 
         public DirectoryInfo SqlPostDirectory
         {
-            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "3_Post")); }
+            get { return new DirectoryInfo(Path.Combine(SqlDir ?? "SQL", "3_Post")); }
         }
         #endregion
     }

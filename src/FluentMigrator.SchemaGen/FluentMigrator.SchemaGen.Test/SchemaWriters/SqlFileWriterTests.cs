@@ -25,7 +25,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         [SetUp]
         public void SetUp()
         {
-            SchemaGenOptions.Instance = options = new SchemaGenOptions { SqlDirName = "SQL" };
+            SchemaGenOptions.Instance = options = new SchemaGenOptions { SqlDir = "SQL" };
             announcer = new ConsoleAnnouncer();
             writer = new SqlFileWriter(options, announcer);
             options.EmbedSql.ShouldBe(false);   // OFF by default
