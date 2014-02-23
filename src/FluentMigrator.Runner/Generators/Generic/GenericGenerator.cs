@@ -44,6 +44,31 @@ namespace FluentMigrator.Runner.Generators.Generic
         public virtual string DeleteConstraint { get { return "ALTER TABLE {0} DROP CONSTRAINT {1}"; } }
         public virtual string CreateForeignKeyConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}){5}{6}"; } }
 
+        public virtual string DropView { get { return "DROP VIEW {0}"; } }
+        public virtual string DropProcedure { get { return "DROP PROCEDURE {0}"; } }
+        public virtual string DropFunction { get { return "DROP FUNCTION {0}"; } }
+        public virtual string DropType { get { return "DROP TYPE {0}"; } }
+
+        public override string Generate(DeleteViewExpression expression)
+        {
+            return String.Format(DropView, Quoter.QuoteViewName(expression.ViewName));
+        }
+
+        public override string Generate(DeleteProcedureExpression expression)
+        {
+            return String.Format(DropProcedure, Quoter.QuoteProcedureName(expression.ProcedureName));
+        }
+
+        public override string Generate(DeleteFunctionExpression expression)
+        {
+            return String.Format(DropFunction, Quoter.QuoteFunctionName(expression.FunctionName));
+        }
+
+        public override string Generate(DeleteTypeExpression expression)
+        {
+            return String.Format(DropType, Quoter.QuoteTypeName(expression.TypeName));
+        }
+
         public virtual string GetUniqueString(CreateIndexExpression column)
         {
             return column.Index.IsUnique ? "UNIQUE " : string.Empty;

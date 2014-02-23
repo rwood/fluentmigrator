@@ -193,6 +193,38 @@ namespace FluentMigrator.Runner.Generators.Generic
         }
 
         /// <summary>
+        /// Quotes a View name
+        /// </summary>
+        public virtual string QuoteViewName(string viewName)
+        {
+            return IsQuoted(viewName) ? viewName : Quote(viewName);
+        }
+
+        /// <summary>
+        /// Quotes a Procedure name
+        /// </summary>
+        public virtual string QuoteProcedureName(string procedureName)
+        {
+            return IsQuoted(procedureName) ? procedureName : Quote(procedureName);
+        }
+
+        /// <summary>
+        /// Quotes a Function name
+        /// </summary>
+        public virtual string QuoteFunctionName(string functionName)
+        {
+            return IsQuoted(functionName) ? functionName : Quote(functionName);
+        }
+
+        /// <summary>
+        /// Quotes a Type name
+        /// </summary>
+        public virtual string QuoteTypeName(string typeName)
+        {
+            return IsQuoted(typeName) ? typeName : Quote(typeName);
+        }
+
+        /// <summary>
         /// Quotes a Schema Name
         /// </summary>
         public virtual string QuoteSchemaName(string schemaName)

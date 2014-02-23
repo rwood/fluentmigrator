@@ -13,5 +13,9 @@
         string QuoteSchemaName(string schemaName);
         string QuoteCommand(string command);
         string QuoteSequenceName(string sequenceName);
+        string QuoteViewName(string tableName);
+        string QuoteProcedureName(string tableName);
+        string QuoteFunctionName(string tableName);
+        string QuoteTypeName(string tableName);
     }
 }

@@ -56,6 +56,10 @@ namespace FluentMigrator.Runner.Generators.Base
         public abstract string Generate(CreateConstraintExpression expression);
         public abstract string Generate(DeleteConstraintExpression expression);
         public abstract string Generate(DeleteDefaultConstraintExpression expression);
+        public abstract string Generate(DeleteFunctionExpression expression);
+        public abstract string Generate(DeleteProcedureExpression expression);
+        public abstract string Generate(DeleteTypeExpression expression);
+        public abstract string Generate(DeleteViewExpression expression);
 
         public virtual bool IsAdditionalFeatureSupported(string feature)
         {

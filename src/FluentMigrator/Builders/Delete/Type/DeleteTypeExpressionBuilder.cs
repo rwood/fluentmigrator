@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // 
 // Copyright (c) 2007-2009, Sean Chambers <schambers80@gmail.com>
 // 
@@ -16,13 +16,13 @@
 //
 #endregion
 
-namespace FluentMigrator.Builders.Delete.Sequence
-{
-    using Expressions;
+using FluentMigrator.Expressions;
 
-    public class DeleteSequenceExpressionBuilder : ExpressionBuilderBase<DeleteSequenceExpression>, IInSchemaSyntax
+namespace FluentMigrator.Builders.Delete.Type
+{
+    public class DeleteTypeExpressionBuilder : ExpressionBuilderBase<DeleteTypeExpression>, IInSchemaSyntax
     {
-        public DeleteSequenceExpressionBuilder(DeleteSequenceExpression expression)
+        public DeleteTypeExpressionBuilder(DeleteTypeExpression expression)
             : base(expression)
         {
         }

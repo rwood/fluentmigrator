@@ -164,6 +164,26 @@ namespace FluentMigrator.Runner.Processors
             Process(Generator.Generate(expression));
         }
 
+        public void Process(DeleteFunctionExpression expression)
+        {
+            Process(Generator.Generate(expression));
+        }
+
+        public void Process(DeleteProcedureExpression expression)
+        {
+            Process(Generator.Generate(expression));
+        }
+
+        public void Process(DeleteViewExpression expression)
+        {
+            Process(Generator.Generate(expression));
+        }
+
+        public void Process(DeleteTypeExpression expression)
+        {
+            Process(Generator.Generate(expression));
+        }
+
         protected abstract void Process(string sql);
 
         public virtual void BeginTransaction()

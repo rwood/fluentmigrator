@@ -20,9 +20,13 @@ using FluentMigrator.Builders.Delete.Column;
 using FluentMigrator.Builders.Delete.Constraint;
 using FluentMigrator.Builders.Delete.DefaultConstraint;
 using FluentMigrator.Builders.Delete.ForeignKey;
+using FluentMigrator.Builders.Delete.Function;
 using FluentMigrator.Builders.Delete.Index;
+using FluentMigrator.Builders.Delete.Procedure;
 using FluentMigrator.Builders.Delete.Sequence;
 using FluentMigrator.Builders.Delete.Table;
+using FluentMigrator.Builders.Delete.Type;
+using FluentMigrator.Builders.Delete.View;
 using FluentMigrator.Expressions;
 using FluentMigrator.Infrastructure;
 using FluentMigrator.Model;
@@ -77,6 +81,34 @@ namespace FluentMigrator.Builders.Delete
             var expression = new DeleteDataExpression {TableName = tableName};
             _context.Expressions.Add(expression);
             return new DeleteDataExpressionBuilder(expression);
+        }
+
+        public IInSchemaSyntax Procedure(string procedureName)
+        {
+            var expression = new DeleteProcedureExpression { ProcedureName = procedureName };
+            _context.Expressions.Add(expression);
+            return new DeleteProcedureExpressionBuilder(expression);
+        }
+
+        public IInSchemaSyntax View(string viewName)
+        {
+            var expression = new DeleteViewExpression { ViewName = viewName };
+            _context.Expressions.Add(expression);
+            return new DeleteViewExpressionBuilder(expression);
+        }
+
+        public IInSchemaSyntax Function(string functionName)
+        {
+            var expression = new DeleteFunctionExpression { FunctionName = functionName };
+            _context.Expressions.Add(expression);
+            return new DeleteFunctionExpressionBuilder(expression);
+        }
+
+        public IInSchemaSyntax Type(string typeName)
+        {
+            var expression = new DeleteTypeExpression { TypeName = typeName};
+            _context.Expressions.Add(expression);
+            return new DeleteTypeExpressionBuilder(expression);
         }
 
         public IDeleteIndexForTableSyntax Index(string indexName)

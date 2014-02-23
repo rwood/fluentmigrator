@@ -22,15 +22,15 @@ using FluentMigrator.Infrastructure;
 
 namespace FluentMigrator.Expressions
 {
-    public class DeleteTableExpression : MigrationExpressionBase
+    public class DeleteProcedureExpression : MigrationExpressionBase
     {
         public virtual string SchemaName { get; set; }
-        public virtual string TableName { get; set; }
+        public virtual string ProcedureName { get; set; }
 
         public override void CollectValidationErrors(ICollection<string> errors)
         {
-            if (String.IsNullOrEmpty(TableName))
-                errors.Add(ErrorMessages.TableNameCannotBeNullOrEmpty);
+            if (String.IsNullOrEmpty(ProcedureName))
+                errors.Add(ErrorMessages.ProcedureNameCannotBeNullOrEmpty);
         }
 
         public override void ExecuteWith(IMigrationProcessor processor)
@@ -40,7 +40,7 @@ namespace FluentMigrator.Expressions
 
         public override string ToString()
         {
-            return base.ToString() + TableName;
+            return base.ToString() + ProcedureName;
         }
     }
 }

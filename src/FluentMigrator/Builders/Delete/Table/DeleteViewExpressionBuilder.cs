@@ -16,13 +16,13 @@
 //
 #endregion
 
-namespace FluentMigrator.Builders.Delete.Sequence
-{
-    using Expressions;
+using FluentMigrator.Expressions;
 
-    public class DeleteSequenceExpressionBuilder : ExpressionBuilderBase<DeleteSequenceExpression>, IInSchemaSyntax
+namespace FluentMigrator.Builders.Delete.View
+{
+    public class DeleteViewExpressionBuilder : ExpressionBuilderBase<DeleteViewExpression>, IInSchemaSyntax
     {
-        public DeleteSequenceExpressionBuilder(DeleteSequenceExpression expression)
+        public DeleteViewExpressionBuilder(DeleteViewExpression expression)
             : base(expression)
         {
         }

@@ -34,6 +34,11 @@ namespace FluentMigrator.Builders.Delete
         IDeleteForeignKeyOnTableSyntax ForeignKey(string foreignKeyName);
         IDeleteDataOrInSchemaSyntax FromTable(string tableName);
 
+        IInSchemaSyntax Procedure(string procedureName);
+        IInSchemaSyntax View(string viewName);
+        IInSchemaSyntax Function(string functionName);
+        IInSchemaSyntax Type(string typeName);
+
         /// <summary>
         /// Deletes an index
         /// </summary>

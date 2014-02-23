@@ -43,6 +43,26 @@ namespace FluentMigrator.Runner.Generators.Postgres
             return String.Format("DROP TABLE {0}.{1}", Quoter.QuoteSchemaName(expression.SchemaName), Quoter.QuoteTableName(expression.TableName));
         }
 
+        public override string Generate(DeleteViewExpression expression)
+        {
+            return string.Format("DROP VIEW {0}.{1}", Quoter.QuoteSchemaName(expression.SchemaName), Quoter.QuoteViewName(expression.ViewName));
+        }
+
+        public override string Generate(DeleteProcedureExpression expression)
+        {
+            return string.Format("DROP PROCEDURE {0}.{1}", Quoter.QuoteSchemaName(expression.SchemaName), Quoter.QuoteProcedureName(expression.ProcedureName));
+        }
+
+        public override string Generate(DeleteFunctionExpression expression)
+        {
+            return string.Format("DROP FUNCTION {0}.{1}", Quoter.QuoteSchemaName(expression.SchemaName), Quoter.QuoteFunctionName(expression.FunctionName));
+        }
+
+        public override string Generate(DeleteTypeExpression expression)
+        {
+            return string.Format("DROP TYPE {0}.{1}", Quoter.QuoteSchemaName(expression.SchemaName), Quoter.QuoteTypeName(expression.TypeName));
+        }
+
         public override string Generate(DeleteColumnExpression expression)
         {
             StringBuilder builder = new StringBuilder();

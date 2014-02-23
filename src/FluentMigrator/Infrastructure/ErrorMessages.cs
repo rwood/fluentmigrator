@@ -26,6 +26,10 @@ namespace FluentMigrator.Infrastructure
         public const string ColumnNamesMustBeUnique = "Column names must be unique.";
         public const string SchemaNameCannotBeNullOrEmpty = "The schema's name cannot be null or an empty string.";
         public const string TableNameCannotBeNullOrEmpty = "The table's name cannot be null or an empty string.";
+        public const string ViewNameCannotBeNullOrEmpty = "The view's name cannot be null or an empty string.";
+        public const string TypeNameCannotBeNullOrEmpty = "The types's name cannot be null or an empty string.";
+        public const string FunctionNameCannotBeNullOrEmpty = "The function's name cannot be null or an empty string.";
+        public const string ProcedureNameCannotBeNullOrEmpty = "The procedure's name cannot be null or an empty string.";
         public const string OldColumnNameCannotBeNullOrEmpty = "The old column name cannot be null or empty.";
         public const string NewColumnNameCannotBeNullOrEmpty = "The new column name cannot be null or empty.";
         public const string OldTableNameCannotBeNullOrEmpty = "The old table name cannot be null or empty.";
