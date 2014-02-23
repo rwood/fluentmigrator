@@ -73,7 +73,7 @@ namespace FluentMigrator.SchemaGen.Model
             if (changes.Any())
             {
                 //lines.WriteLine();
-                if (Options.Instance.ShowChanges && oldCode != null)
+                if (oldCode != null)
                 {
                     lines.WriteComments(oldCode);
                 }

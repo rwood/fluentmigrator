@@ -182,7 +182,7 @@ namespace FluentMigrator.SchemaGen.Model
 
         public string GetMigrationTypeFunctionForType()
         {
-            var options = Options.Instance;
+            var useDeprecatedTypes = Options.Instance.UseDeprecatedTypes;
             var precision = Precision;
             string sizeStr = GetMigrationTypeSize(Type, Size);
             string precisionStr = (precision == -1) ? "" : "," + precision.ToString();
@@ -191,7 +191,7 @@ namespace FluentMigrator.SchemaGen.Model
             switch (Type)
             {
                 case DbType.AnsiString:
-                    if (options.UseDeprecatedTypes && Size == DbTypeSizes.AnsiTextCapacity)
+                    if (useDeprecatedTypes && Size == DbTypeSizes.AnsiTextCapacity)
                     {
                         sysType = "AsCustom(\"TEXT\")";
                     }
@@ -204,7 +204,7 @@ namespace FluentMigrator.SchemaGen.Model
                     sysType = string.Format("AsFixedLengthAnsiString({0})", sizeStr);
                     break;
                 case DbType.String:
-                    if (options.UseDeprecatedTypes && Size == DbTypeSizes.UnicodeTextCapacity)
+                    if (useDeprecatedTypes && Size == DbTypeSizes.UnicodeTextCapacity)
                     {
                         sysType = "AsCustom(\"NTEXT\")";
                     }
@@ -217,7 +217,7 @@ namespace FluentMigrator.SchemaGen.Model
                     sysType = string.Format("AsFixedLengthString({0})", sizeStr);
                     break;
                 case DbType.Binary:
-                    if (options.UseDeprecatedTypes && Size == DbTypeSizes.ImageCapacity)
+                    if (useDeprecatedTypes && Size == DbTypeSizes.ImageCapacity)
                     {
                         sysType = "AsCustom(\"IMAGE\")";
                     }

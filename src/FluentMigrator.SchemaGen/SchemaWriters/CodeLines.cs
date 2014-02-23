@@ -45,6 +45,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             indent += by;
         }
 
+        public void Block(CodeLines lines, Func<CodeLines> fnBlock, string blockStatement = "")
+        {
+            if (blockStatement != String.Empty)
+                lines.WriteLine(blockStatement + " {");
+            else
+                lines.WriteLine("{");
+
+            Indent();
+            lines.WriteLines(fnBlock());
+            Indent(-1);
+            lines.WriteLine("}");
+        }
+
         private string[] SplitCodeLines(string codeText)
         {
             // Need to split into lines so indenting works 
