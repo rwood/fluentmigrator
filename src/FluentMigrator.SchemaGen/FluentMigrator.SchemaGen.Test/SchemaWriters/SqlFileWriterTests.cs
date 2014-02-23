@@ -18,14 +18,17 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
     [Category("Integration")]
     class SqlFileWriterTests
     {
-        private SqlFileWriter writer;
+        private ISqlFileWriter writer;
+        private SchemaGenOptions options;
+        private IAnnouncer announcer;
 
         [SetUp]
         public void SetUp()
         {
-            IOptions options = new FmCodeGen { SqlDirName = "SQL" };
-            IAnnouncer announcer = new ConsoleAnnouncer();
+            SchemaGenOptions.Instance = options = new SchemaGenOptions { SqlDirName = "SQL" };
+            announcer = new ConsoleAnnouncer();
             writer = new SqlFileWriter(options, announcer);
+            options.EmbedSql.ShouldBe(false);   // OFF by default
         }
 
         [Test]
@@ -33,35 +36,89 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         {
             CodeLines lines = writer.EmbedSql("DROP TABLE [Users]");
             lines.Count().ShouldBe(1);
-            lines.First().ShouldBe("Execute.Sql(@\"DROP TABLE [Users]\");");
+            lines.First().ShouldBe(@"Execute.Sql(@""DROP TABLE [Users]"");");
+        }
+
+        [Test]
+        public void WontEmbedSqlWhenEmptyString()
+        {
+            CodeLines lines = writer.EmbedSql("\t  \t");
+            lines.Count().ShouldBe(0);
+        }
+
+        [Test]
+        public void CanExecuteSqlFile()
+        {
+            var lines = writer.ExecuteSqlFile(new FileInfo(@"SQL\sample0.sql")).ToArray();
+            lines.Length.ShouldBe(2);
+            lines[0].ShouldBe("");
+            lines[1].ShouldBe(@"Execute.Script(""sample0.sql"");");
         }
 
         [Test]
         public void CanEmbedSqlFile()
         {
-            CodeLines lines = writer.EmbedSqlFile(new FileInfo(@"SQL\sample0.sql"));
-            lines.Count().ShouldBe(1);
-            lines.First().ShouldBe("Execute.Sql(@\"DROP TABLE [Users]\");");
+            options.EmbedSql = true;            // Turn ON
+            var lines = writer.ExecuteSqlFile(new FileInfo(@"SQL\sample1.sql")).ToArray();
+            lines.Length.ShouldBe(2);
+            lines[0].ShouldBe("// sample1.sql");
+            lines[1].ShouldBe(@"Execute.Sql(@""DROP TABLE [Users]"");");
+        }
+
+        [Test]
+        public void WontEmbedSqlFileWhenEmptyStatements()
+        {
+            CodeLines lines = writer.EmbedSqlFile(new FileInfo(@"SQL\empty.sql"));
+            lines.Count().ShouldBe(0);
         }
 
         [Test]
         public void CanEmbedTaggedSqlFile()
         {
-            CodeLines lines = writer.EmbedSqlFile(new FileInfo(@"SQL\sample0.sql"));
+            CodeLines lines = writer.EmbedSqlFile(new FileInfo(@"SQL\sample2.sql"));
             //Assert.Fail(lines.ToString());
-            
-            string[] expected = File.ReadAllLines(@"SQL\sample0.txt");
+
+            string[] expected = File.ReadAllLines(@"Expected\sample2.txt");
             lines.Cast<string>().ShouldBe(expected);
         }
 
         [Test]
-        public void CanEmbedSqlDirectory()
+        public void CanLinkSqlDirectoryWithTaggedFiles1()
         {
+            CodeLines lines = writer.ExecuteSqlDirectory(new DirectoryInfo(@"SQL"));
+            lines.Count().ShouldBe(2);
+            lines.ToArray()[1].ShouldBe(@"Execute.NestedScriptDirectory(""."").WithTag(this.GetDbTag()).WithGos();");
         }
 
         [Test]
-        public void CanEmbedSqlDirectoryWithTaggedFiles()
+        public void CanEmbedSqlDirectoryWithTaggedFiles2()
         {
+            options.EmbedSql = true;            // Turn ON
+            var actual = writer.ExecuteSqlDirectory(new DirectoryInfo(@"SQL\3_Post")).ToArray();
+            //File.WriteAllLines(@"embed-all.txt", actual); // Capture regression to Debug folder
+
+            string[] expected= File.ReadAllLines(@"Expected\embed-all.txt");
+
+            actual.ShouldBe(expected);
         }
+
+        [Test]
+        public void CanExecutePerTableSqlScripts()
+        {
+            options.EmbedSql = true;            // Turn ON
+            options.PerTableScripts.ShouldBe(false);
+            
+            var actual1 = writer.ExecutePerTableSqlScripts(false, "table2").ToArray();
+            actual1.Length.ShouldBe(0);  // PerTable disabled
+
+            options.PerTableScripts = true;
+            var actual2 = writer.ExecutePerTableSqlScripts(false, "table2").ToArray();
+
+            //File.WriteAllLines(@"up_table2.txt", actual2); // Capture regression to Debug folder
+
+            string[] expected = File.ReadAllLines(@"Expected\up_table2.txt");
+            actual2.ShouldBe(expected);
+        }
+        
     }
 }

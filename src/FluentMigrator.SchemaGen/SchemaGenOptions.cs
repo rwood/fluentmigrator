@@ -67,13 +67,13 @@ namespace FluentMigrator.SchemaGen
     /// <summary>
     /// Used by CommandLineParser from NuGet
     /// </summary>
-    internal class Options : IOptions
+    public class SchemaGenOptions : IOptions
     {
         private static IOptions _instance;
 
         public static IOptions Instance
         {
-            get { return _instance ?? (_instance = new Options()); }
+            get { return _instance ?? (_instance = new SchemaGenOptions()); }
             set { _instance = value; }
         }
 

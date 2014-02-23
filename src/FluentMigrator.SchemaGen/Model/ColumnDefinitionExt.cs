@@ -182,7 +182,7 @@ namespace FluentMigrator.SchemaGen.Model
 
         public string GetMigrationTypeFunctionForType()
         {
-            var useDeprecatedTypes = Options.Instance.UseDeprecatedTypes;
+            var useDeprecatedTypes = SchemaGenOptions.Instance.UseDeprecatedTypes;
             var precision = Precision;
             string sizeStr = GetMigrationTypeSize(Type, Size);
             string precisionStr = (precision == -1) ? "" : "," + precision.ToString();

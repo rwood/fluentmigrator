@@ -43,10 +43,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         public override string ToString()
         {
-            return "new string[] {"
-                + this.Select(t => "@\"" + t.Replace("\"", "\"\"") + '"')
-                .StringJoin("," + Environment.NewLine)
-            + '}';
+            return this.ToArray().StringJoin(Environment.NewLine);
+            //return "new string[] {"
+            //    + this.Select(t => "@\"" + t.Replace("\"", "\"\"") + '"')
+            //    .StringJoin("," + Environment.NewLine)
+            //+ '}';
         }
 
         public void Indent(int by = 1)

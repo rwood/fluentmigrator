@@ -31,7 +31,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
     {
         CodeLines EmbedSql(string sqlStatement);
         CodeLines EmbedSqlFile(FileInfo sqlFile);
-        void ExecuteSqlFile(CodeLines lines, FileInfo sqlFile);
+        CodeLines ExecuteSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlDirectory(DirectoryInfo subfolder);
         CodeLines ExecutePerTableSqlScripts(bool isCreate, string tableName);
     }
@@ -59,9 +59,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return file.FullName.Substring(relativeTo.FullName.Length + 1);
         }
 
-        private string GetRelativePath(DirectoryInfo dir)
+        private string GetRelativePath(DirectoryInfo dir, DirectoryInfo relativeTo)
         {
-            return dir.FullName.Replace(options.SqlDirectory + "\\", "");
+            Debug.Assert(dir.FullName.StartsWith(relativeTo.FullName));
+            if (dir.FullName == relativeTo.FullName) return ".";
+            return dir.FullName.Substring(relativeTo.FullName.Length + 1);
         }
 
         public CodeLines EmbedSql(string sqlStatement)
@@ -99,23 +101,31 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         public CodeLines EmbedSqlFile(FileInfo sqlFile)
         {
-            announcer.Say(sqlFile.FullName + ": Importing SQL script.");
             var lines = new CodeLines();
 
             string allLines = File.ReadAllText(sqlFile.FullName);
+            if (allLines.EndsWith("GO")) allLines += " "; // simplify regex
+
             Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
-            lines.WriteComment(GetRelativePath(sqlFile, options.SqlDirectory));
-
-            foreach (var sqlStatment in goStatement.Split(allLines + " "))
+            bool first = true;
+            foreach (var sqlStatment in goStatement.Split(allLines).Where(t => t.Trim().Length > 0))
             {
+                if (first)
+                {
+                    first = false;
+                    announcer.Say(sqlFile.FullName + ": Importing SQL script.");
+                    lines.WriteComment(GetRelativePath(sqlFile, options.SqlDirectory));
+                }
+
                 lines.WriteLines(EmbedSql(sqlStatment));
             }
             return lines;
         }
 
-        public void ExecuteSqlFile(CodeLines lines, FileInfo sqlFile)
+        public CodeLines ExecuteSqlFile(FileInfo sqlFile)
         {
+            var lines = new CodeLines();
             if (options.EmbedSql)
             {
                 if (!sqlFile.Exists)
@@ -124,7 +134,6 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 }
                 else
                 {
-                    announcer.Say(sqlFile.FullName + ": Importing SQL script.");
                     lines.WriteLines(EmbedSqlFile(sqlFile));
                 }
             }
@@ -135,9 +144,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 string scriptPath = GetRelativePath(sqlFile, options.SqlDirectory).Replace("\\", "\\\\");
                 lines.WriteLine("Execute.Script(\"{0}\");", scriptPath);   
             }
+            return lines;
         }
 
-        private CodeLines EmbedTaggedSqlDirectory(DirectoryInfo dir)
+        public CodeLines EmbedTaggedSqlDirectory(DirectoryInfo dir)
         {
             var lines = new CodeLines();
 
@@ -158,19 +168,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return lines;
         }
 
-        public CodeLines ExecuteSqlDirectory(DirectoryInfo sqlDirectory)
+        public CodeLines ExecuteSqlDirectory(DirectoryInfo dir)
         {
             var lines = new CodeLines();
             if (options.SqlDirectory != null)
             {
                 if (options.EmbedSql)
                 {
-                    if (!sqlDirectory.Exists)
+                    if (!dir.Exists)
                     {
-                        announcer.Emphasize(sqlDirectory.FullName + ": SQL Script directory not found.");
+                        announcer.Emphasize(dir.FullName + ": SQL Script directory not found.");
                     }
                     {
-                        EmbedTaggedSqlDirectory(sqlDirectory);
+                        lines.WriteLines(EmbedTaggedSqlDirectory(dir));
                     }
                 }
                 else
@@ -181,8 +191,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     // SQL script paths must be relaive to SQL directory.
                     // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
                     lines.WriteLine();
-                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithTag({1}).WithGos();", 
-                        GetRelativePath(sqlDirectory).Replace("\\", "\\\\"), CallGetDbTag);
+                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithTag({1}).WithGos();",
+                        GetRelativePath(dir, options.SqlDirectory).Replace("\\", "\\\\"), CallGetDbTag);
                 }
             }
             return lines;
@@ -227,7 +237,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             if (options.PerTableScripts)
             {
                 var perTableDir = options.SqlPerTableDirectory;
-                string perTableDirRel = GetRelativePath(perTableDir).Replace("\\", "\\\\");
+                string perTableDirRel = GetRelativePath(perTableDir, options.SqlDirectory).Replace("\\", "\\\\");
                 
                 // Example: "up_MyTable_SS_OCL.sql"   where prefix is "up_MyTable" and it's tagged to run for SQL Server (SS) and Oracle (OCL)
                 // Tags used depend on the rule you create in MigrationExt.GetCurrentDatabaseTag()
@@ -242,7 +252,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     foreach (var file in files)
                     {
                         // Get a path relative to the PerTable directory
-                        string relPath = file.FullName.Replace(options.PerTableScripts + "\\", "");
+                        string relPath = GetRelativePath(file, options.SqlPerTableDirectory);
 
                         var fileTags = GetFilePathTags(relPath, scriptPrefix);
 

@@ -46,7 +46,7 @@ namespace FluentMigrator.SchemaGen
         private static void Main(string[] args)
         {
             int exit = 0;
-            var options = new Options();
+            var options = new SchemaGenOptions();
             var announcer = new ConsoleAnnouncer();
 
             if (CommandLine.Parser.Default.ParseArguments(args, options))
