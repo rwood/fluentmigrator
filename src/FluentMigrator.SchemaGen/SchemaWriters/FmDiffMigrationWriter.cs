@@ -38,7 +38,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         private readonly IAnnouncer announcer;
         private readonly IDbSchemaReader db1;
         private readonly IDbSchemaReader db2;
-        private readonly SqlFileWriter sqlFileWriter;
+        private readonly ISqlFileWriter sqlFileWriter;
 
         private int step = 1;
 
@@ -192,8 +192,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
                 using (new Block(codeLines)) // namespace {}
                 {
-                    codeLines.WriteLine("[MigrationVersion({0})]",
-                                        options.MigrationVersion.Replace(".", ", ") + ", " + step);
+                    codeLines.WriteLine("[MigrationVersion({0})]", options.MigrationVersion.Replace(".", ", ") + ", " + step);
 
                     string tags = options.Tags ?? "" + addTags ?? "";
                     if (!string.IsNullOrEmpty(tags))
@@ -201,7 +200,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                         codeLines.WriteLine("[Tags(\"{0}\")]", tags.Replace(",", "\", \""));
                     }
 
-                    codeLines.WriteLine("public class {0} : {1}", className, downMethod == null ? "AutoReversingMigrationExt" : "MigrationExt");
+                    string inheritFrom = downMethod == null ? "AutoReversingMigration" : "Migration";
+                    codeLines.WriteLine("public class {0} : {1}", className, inheritFrom);
                     using (new Block(codeLines)) // class {}
                     {
                         codeLines.WriteLine("public override void Up()");
@@ -303,28 +303,34 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return lines;
         }
 
+        private string InSchema(string schema)
+        {
+            if (string.IsNullOrEmpty(schema) || schema == "dbo") return "";
+            return string.Format(".InSchema(\"{0}\")", schema);
+        }
+
         private CodeLines DropRemovedObjects()
         {
             var lines = new CodeLines();
 
-            foreach (var name in db1.StoredProcedures.Except(db2.StoredProcedures))
+            foreach (var objName in db1.StoredProcedures.Except(db2.StoredProcedures))
             {
-                lines.WriteLine("DeleteStoredProcedure(\"{0}\");", name);
+                lines.WriteLine("Delete.Procedure(\"{0}\"){1};", objName.Name, InSchema(objName.SchemaName));
             }
 
-            foreach (var name in db1.Views.Except(db2.Views))
+            foreach (var objName in db1.Views.Except(db2.Views))
             {
-                lines.WriteLine("DeleteView(\"{0}\");", name);
+                lines.WriteLine("Delete.View(\"{0}\"){1};", objName.Name, InSchema(objName.SchemaName));
             }
 
-            foreach (var name in db1.UserDefinedFunctions.Except(db2.UserDefinedFunctions))
+            foreach (var objName in db1.UserDefinedFunctions.Except(db2.UserDefinedFunctions))
             {
-                lines.WriteLine("DeleteFunction(\"{0}\");", name);
+                lines.WriteLine("Delete.Function(\"{0}\"){1};", objName.Name, InSchema(objName.SchemaName));
             }
 
-            foreach (var name in db1.UserDefinedDataTypes.Except(db2.UserDefinedDataTypes))
+            foreach (var objName in db1.UserDefinedDataTypes.Except(db2.UserDefinedDataTypes))
             {
-                lines.WriteLine("DeleteType(\"{0}\");", name);
+                lines.WriteLine("Delete.Type(\"{0}\"){1};", objName.Name, InSchema(objName.SchemaName));
             }
 
             return lines;
@@ -362,7 +368,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     {
                         // Even if there were no changes schema changes we may still have an SQL script to run for this table.
                         // If no SQL file exists then no class is created.
-                        WriteMigrationClass("Update_" + table.Name, () => sqlFileWriter.ExecutePerTableSqlScript(false, newTable.Name));
+                        WriteMigrationClass("Update_" + table.Name, () => sqlFileWriter.ExecutePerTableSqlScripts(false, newTable.Name));
                     }
                 }
                 else
@@ -375,7 +381,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         private CodeLines CreateTable(TableDefinitionExt newTable)
         {
             CodeLines lines = newTable.GetCreateCode();                                    // Create.Table() 
-            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScript(true, newTable.Name)); // Execute.Sql() if table SQL file exists.
+            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScripts(true, newTable.Name)); // Execute.Sql() if table SQL file exists.
             return lines;
         }
 
@@ -421,7 +427,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             var updatedColOldCode = colsDiff.GetUpdatedOld().Select(col => col.CreateCode); // Show old col defn as comments
             var updatedColsCode = colsDiff.GetUpdatedNew().Select(colCode => colCode.CreateCode.Replace("WithColumn", "AlterColumn")); 
 
-            newTable.GetAlterTableCode(lines, updatedColsCode, updatedColOldCode);   // UPDATED columns (including 1 column indexes)
+            newTable.GetAlterTableCode(lines, updatedColsCode, options.ShowChanges ? updatedColOldCode : null);   // UPDATED columns (including 1 column indexes)
 
             var addedColsCode = colsDiff.GetAdded().Select(colCode => colCode.CreateCode.Replace("WithColumn", "AddColumn"));
             newTable.GetAlterTableCode(lines, addedColsCode);                       // Add NEW columns
@@ -431,7 +437,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // Note: The developer may inject custom data migration code here
             // We preserve old columns and indexes for this phase.
-            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScript(false, newTable.Name));    // Run data migration SQL if any
+            lines.WriteLines(sqlFileWriter.ExecutePerTableSqlScripts(false, newTable.Name));    // Run data migration SQL if any
 
             AddObjects(lines, fkDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED foreign keys
             AddObjects(lines, ixDiff.GetUpdatedNew().Cast<ICodeComparable>());      // Add UPDATED indexes (excluding 1 column indexes)
