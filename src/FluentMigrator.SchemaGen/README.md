@@ -70,8 +70,9 @@ Schema Upgrades:
 Fluent Migrator API Changes
 ---------------------------
 
-* Added Create.Index().WithOptions.Fill(fill_factor) 
-* Added Execute.ScriptDirectory() - Executes a directory of SQL scripts with optional script tag selection.  
+* Added Create.Index().WithOptions.Fill(fill_factor) - Added fill factor support for SQL Server indexes.
+* Added Execute.ScriptInDirectory() / Execute.ScriptsInNestedDirectories() - Executes directories of SQL scripts.  
+  * Includes .WithTag()/.WithTags()/.WithPrefix() options to dynamically filter the set of SQL scripts executed.
 
 SQL Script execution
 --------------------
