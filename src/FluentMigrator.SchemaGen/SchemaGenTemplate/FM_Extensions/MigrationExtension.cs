@@ -14,7 +14,7 @@ namespace Migrations.FM_Extensions
         /// WARNING: Used by classes generated from FluentMigrator.SchemaGen.SchemaWriters.ExecuteSqlDirectory as well as <see cref="SqlScriptMigration"/>.
         /// </remarks>
         /// </summary>
-        public static string GetCurrentDatabaseTag(this Migration migration)
+        public static string GetDbTag(this MigrationBase migration)
         {
             string cs = migration.ConnectionString.ToUpper();
 
