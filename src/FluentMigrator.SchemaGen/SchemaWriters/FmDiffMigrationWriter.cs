@@ -338,13 +338,13 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         #endregion
 
         #region Create / Update Tables
-        private void CreateUpdateTables(string perTableSubfolder)
+        private void CreateUpdateTables(DirectoryInfo perTableSubfolder)
         {
             var db1Tables = db1.Tables;
 
             if (options.PerTableScripts)
             {
-                var dir = new DirectoryInfo(options.SqlPerTableDirectory);
+                var dir = options.SqlPerTableDirectory;
                 if (!dir.Exists)
                 {
                     announcer.Error(dir.FullName + ": SQL script folder not found.");

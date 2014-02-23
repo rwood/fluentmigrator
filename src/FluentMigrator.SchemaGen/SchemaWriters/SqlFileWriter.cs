@@ -32,7 +32,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         CodeLines EmbedSql(string sqlStatement);
         CodeLines EmbedSqlFile(FileInfo sqlFile);
         void ExecuteSqlFile(CodeLines lines, FileInfo sqlFile);
-        CodeLines ExecuteSqlDirectory(string subfolder);
+        CodeLines ExecuteSqlDirectory(DirectoryInfo subfolder);
         CodeLines ExecutePerTableSqlScripts(bool isCreate, string tableName);
     }
 
@@ -53,9 +53,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             this.announcer = announcer;
         }
 
-        private string GetRelativePath(FileInfo file)
+        private string GetRelativePath(FileInfo file, DirectoryInfo relativeTo)
         {
-            return file.FullName.Replace(options.SqlDirectory + "\\", "");
+            Debug.Assert(file.FullName.StartsWith(relativeTo.FullName));
+            return file.FullName.Substring(relativeTo.FullName.Length + 1);
         }
 
         private string GetRelativePath(DirectoryInfo dir)
@@ -104,9 +105,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             string allLines = File.ReadAllText(sqlFile.FullName);
             Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
-            lines.WriteComment(GetRelativePath(sqlFile));
+            lines.WriteComment(GetRelativePath(sqlFile, options.SqlDirectory));
 
-            foreach (var sqlStatment in goStatement.Split(allLines))
+            foreach (var sqlStatment in goStatement.Split(allLines + " "))
             {
                 lines.WriteLines(EmbedSql(sqlStatment));
             }
@@ -131,7 +132,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             {
                 // Add even if file does not yet exist.
                 lines.WriteLine();
-                lines.WriteLine("Execute.Script(\"{0}\");", GetRelativePath(sqlFile).Replace("\\", "\\\\"));   
+                string scriptPath = GetRelativePath(sqlFile, options.SqlDirectory).Replace("\\", "\\\\");
+                lines.WriteLine("Execute.Script(\"{0}\");", scriptPath);   
             }
         }
 
@@ -156,12 +158,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return lines;
         }
 
-        public CodeLines ExecuteSqlDirectory(string subfolder)
+        public CodeLines ExecuteSqlDirectory(DirectoryInfo sqlDirectory)
         {
             var lines = new CodeLines();
             if (options.SqlDirectory != null)
             {
-                var sqlDirectory = new DirectoryInfo(subfolder);
                 if (options.EmbedSql)
                 {
                     if (!sqlDirectory.Exists)
@@ -225,7 +226,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             var lines = new CodeLines();
             if (options.PerTableScripts)
             {
-                var perTableDir = new DirectoryInfo(options.SqlPerTableDirectory);
+                var perTableDir = options.SqlPerTableDirectory;
                 string perTableDirRel = GetRelativePath(perTableDir).Replace("\\", "\\\\");
                 
                 // Example: "up_MyTable_SS_OCL.sql"   where prefix is "up_MyTable" and it's tagged to run for SQL Server (SS) and Oracle (OCL)

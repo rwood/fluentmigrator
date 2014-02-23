@@ -41,7 +41,7 @@ namespace FluentMigrator.SchemaGen
         string IncludeTables { get; }
         string ExcludeTables { get; }
 
-        string SqlDirectory { get; }
+        string SqlDirName { get; }
         bool EmbedSql { get; }
 
         bool PreScripts { get; }
@@ -58,9 +58,10 @@ namespace FluentMigrator.SchemaGen
         bool IsInstall { get; } 
         bool IsUpgrade { get; }
 
-        string SqlPreDirectory { get; }
-        string SqlPerTableDirectory { get; }
-        string SqlPostDirectory { get; }
+        DirectoryInfo SqlDirectory { get; }
+        DirectoryInfo SqlPreDirectory { get; }
+        DirectoryInfo SqlPerTableDirectory { get; }
+        DirectoryInfo SqlPostDirectory { get; }
     }
 
     /// <summary>
@@ -125,7 +126,7 @@ namespace FluentMigrator.SchemaGen
         public bool SetNotNullDefault { get; set; }
 
         [Option("sql-dir", DefaultValue = "SQL", HelpText = "SQL script directory .")]
-        public string SqlDirectory { get; set; }
+        public string SqlDirName { get; set; }
 
         [Option("embed-sql", DefaultValue = true, HelpText = "If true, embeds SQL scripts into the migration class. Otherwise, links to the SQL file path. Tip: Set to false during development, then true when deploying or when building for a specific database type.")]
         public bool EmbedSql { get; set; }
@@ -162,21 +163,25 @@ namespace FluentMigrator.SchemaGen
             get { return !string.IsNullOrEmpty(Db1) && !string.IsNullOrEmpty(Db2); }
         }
 
-        public string SqlPreDirectory
+        public DirectoryInfo SqlDirectory
         {
-            get { return Path.Combine(SqlDirectory ?? "SQL", "1_Pre"); }
+            get { return new DirectoryInfo(SqlDirName); }
         }
 
-        public string SqlPerTableDirectory
+        public DirectoryInfo SqlPreDirectory
         {
-            get { return Path.Combine(SqlDirectory ?? "SQL", "2_PerTable"); }
+            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "1_Pre")); }
         }
 
-        public string SqlPostDirectory
+        public DirectoryInfo SqlPerTableDirectory
         {
-            get { return Path.Combine(SqlDirectory ?? "SQL", "3_Post"); }
+            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "2_PerTable")); }
         }
 
+        public DirectoryInfo SqlPostDirectory
+        {
+            get { return new DirectoryInfo(Path.Combine(SqlDirName ?? "SQL", "3_Post")); }
+        }
         #endregion
     }
 }
