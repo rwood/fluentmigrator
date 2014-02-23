@@ -191,7 +191,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     // SQL script paths must be relaive to SQL directory.
                     // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
                     lines.WriteLine();
-                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithTag({1}).WithGos();",
+                    lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithTag({1}).WithGos();",
                         GetRelativePath(dir, options.SqlDirectory).Replace("\\", "\\\\"), CallGetDbTag);
                 }
             }
@@ -264,7 +264,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 else
                 {
                     lines.WriteLine();
-                    lines.WriteLine("Execute.NestedScriptDirectory(\"{0}\").WithPrefix(\"{1}\").WithTag({2}).WithGos();",
+                    lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithPrefix(\"{1}\").WithTag({2}).WithGos();",
                          perTableDirRel, scriptPrefix, CallGetDbTag);
                 }
             }

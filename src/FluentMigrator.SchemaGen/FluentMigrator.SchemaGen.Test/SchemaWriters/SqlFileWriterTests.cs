@@ -87,7 +87,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         {
             CodeLines lines = writer.ExecuteSqlDirectory(new DirectoryInfo(@"SQL"));
             lines.Count().ShouldBe(2);
-            lines.ToArray()[1].ShouldBe(@"Execute.NestedScriptDirectory(""."").WithTag(this.GetDbTag()).WithGos();");
+            lines.ToArray()[1].ShouldBe(@"Execute.ScriptsInNestedDirectories(""."").WithTag(this.GetDbTag()).WithGos();");
         }
 
         [Test]
