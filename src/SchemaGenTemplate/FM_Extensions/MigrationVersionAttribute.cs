@@ -14,19 +14,19 @@ namespace Migrations.FM_Extensions
         {
         }
 
-        public const int MaxMajor = 100;
+        public const int MaxMajor = 1000;
         public const int MaxMinor = 100;
-        public const int MaxPatch = 10000;
+        public const int MaxPatch = 10000;    // Can be app build number
         public const int MaxStep  = 1000;
 
         private static long CalculateValue(int major, int minor, int patch, int step)
         {
             Debug.Assert(major < MaxMajor);
             Debug.Assert(minor < MaxMinor);
-            Debug.Assert(patch < MaxPatch);    // Can be app build number
+            Debug.Assert(patch < MaxPatch); 
             Debug.Assert(step < MaxStep);
 
-            return ((((major * MaxMinor) + minor) * MaxPatch) + patch) * MaxStep + step;
+            return (((((long)major * MaxMinor) + minor) * MaxPatch) + patch) * MaxStep + step;
         }
 
         public void GetVersion(out int major, out int minor, out int patch, out int step)
