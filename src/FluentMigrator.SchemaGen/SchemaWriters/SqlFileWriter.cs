@@ -225,7 +225,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 {
                     // Example: if (this.GetCurrentDatabaseTag() == "TAG1" || this.GetCurrentDatabaseTag() == "TAG2") { ... embed sql ... }
                     string condition = tags.Select(tag => string.Format("{0} == \"{1}\"", CallGetDbTag, tag)).StringJoin(" || ");
-                    lines.Block(string.Format("if ({0}) {{", condition), () => sqlLines);
+                    lines.Block(string.Format("if ({0})", condition), () => sqlLines);
                 }
             }
             return lines;

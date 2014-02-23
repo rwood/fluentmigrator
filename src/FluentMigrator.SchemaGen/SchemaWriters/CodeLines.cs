@@ -66,7 +66,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
         public void Block(string blockStatement, Func<CodeLines> fnBlock)
         {
-            WriteLine(blockStatement + " {");
+            WriteLine(blockStatement);
+            WriteLine("{");
             Indent();
             WriteLines(fnBlock());
             Indent(-1);
