@@ -56,7 +56,7 @@ namespace FluentMigrator.Expressions
             if (!ScriptTags.Any())
             {
                 return from file in sqlDir.GetFiles(sqlFilePattern, SearchOption)
-                       orderby file.FullName // Ensure predicatable execution order
+                       orderby file.FullName // Ensure predicatable execution order and support object dependency ordering
                        select file;
             }
             else
@@ -67,7 +67,7 @@ namespace FluentMigrator.Expressions
                 // A relative path is used to ensure tags in the sqlDir path are ignored.
                 return from file in sqlDir.GetFiles(sqlFilePattern, SearchOption)
                        let relPath = file.FullName.Substring(sqlDir.FullName.Length).ToUpper()
-                       let parts = relPath.Replace('\\', '_').Split('_')
+                       let parts = relPath.Replace('\\', '.').Split('.')
                        where ScriptTags.All(tag => parts.Contains(tag))
                        orderby file.FullName // Ensure predicatable execution order
                        select file;
@@ -76,13 +76,15 @@ namespace FluentMigrator.Expressions
 
         private IEnumerable<string> GetStatements(string sqlText)
         {
+            // Although offically only SQL Server supports this, 
+            // we're allow GO statements as a statement delimiter for all database providers.
             if (SplitGO && sqlText.Contains("GO"))
             {
                 return goSplitter.Split(sqlText);
             }
             else
             {
-                return new string[] {sqlText};
+                return new string[] { sqlText };
             }
         }
 
