@@ -33,9 +33,9 @@ namespace FluentMigrator
         Func<string> GetWorkingDirectory { get; set; }
         Func<IMigration,IMigrationInfo> GetMigrationInfo { get; set; }
         Func<Model.ConstraintDefinition, string> GetConstraintName { get; set; }
-        Func<Type, bool> TypeHasTags { get; set; }
         Func<Type, IEnumerable<string>, bool> TypeHasMatchingTags { get; set; }
-        Func<Type,string,string> GetAutoScriptUpName {get;set;}
+        Func<Type, IEnumerable<string>, bool> TypeHasMatchingFeatures { get; set; }
+        Func<Type, string, string> GetAutoScriptUpName { get; set; }
         Func<Type, string, string> GetAutoScriptDownName { get; set; }
     }
 }

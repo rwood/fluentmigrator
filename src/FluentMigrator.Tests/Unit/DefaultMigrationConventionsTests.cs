@@ -16,7 +16,10 @@
 //
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using FluentMigrator.Infrastructure;
 using FluentMigrator.Model;
@@ -152,20 +155,7 @@ namespace FluentMigrator.Tests.Unit
             defaultWorkingDirectory.Contains("bin").ShouldBeTrue();
         }
 
-        [Test]
-        public void TypeHasTagsReturnTrueIfTypeHasTagsAttribute()
-        {
-            DefaultMigrationConventions.TypeHasTags(typeof(TaggedWithUk))
-                .ShouldBeTrue();
-        }
-
-        [Test]
-        public void TypeHasTagsReturnFalseIfTypeDoesNotHaveTagsAttribute()
-        {
-            DefaultMigrationConventions.TypeHasTags(typeof(HasNoTagsFake))
-                .ShouldBeFalse();
-        }
-
+        [TestFixture]
         public class TypeHasMatchingTags
         {
             [Test]
@@ -178,10 +168,10 @@ namespace FluentMigrator.Tests.Unit
 
             [Test]
             [Category("Tagging")]
-            public void WhenTypeHasTagAttributeWithNoTagNamesReturnsFalse()
+            public void WhenTypeHasTagAttributeWithNoTagNamesReturnsTrue()
             {
                 DefaultMigrationConventions.TypeHasMatchingTags(typeof(HasTagAttributeWithNoTagNames), new string[] { })
-                    .ShouldBeFalse();
+                    .ShouldBeTrue();
             }
 
             [Test]
@@ -249,6 +239,81 @@ namespace FluentMigrator.Tests.Unit
             }
         }
 
+        [TestFixture]
+        public class HasMatchingFeaturesTests
+        {
+            private Type[] types = new[]
+                {
+                    typeof(NoFeatureConstraint), 
+                    typeof(FeatureA), 
+                    typeof(FeatureB), 
+                    typeof(EitherABFeatures), 
+                    typeof(BothABFeatures), 
+                    typeof(BothABorCFeatures)
+                };
+
+            private IEnumerable<Type> GetFeatureTypes(string[] features)
+            {
+                return types.Where(type => DefaultMigrationConventions.TypeHasMatchingFeatures(type, features));
+            }
+             
+            [Test]
+            [Category("Features")]
+            public void FeatureA()
+            {
+                GetFeatureTypes(new string[] { "FeatureA" })
+                    .ShouldBe(new[] { typeof(NoFeatureConstraint), typeof(FeatureA), typeof(EitherABFeatures) });
+            }
+
+            [Test]
+            [Category("Features")]
+            public void FeatureAB()
+            {
+                GetFeatureTypes(new string[] { "FeatureB", "FeatureA" })
+                    .ShouldBe(new[]
+                        {
+                            typeof(NoFeatureConstraint), typeof(FeatureA), typeof(FeatureB), 
+                            typeof(EitherABFeatures), typeof(BothABFeatures), typeof(BothABorCFeatures)
+                        });
+            }
+
+            [Test]
+            [Category("Features")]
+            public void FeatureABC()
+            {
+                GetFeatureTypes(new string[] { "FeatureC", "FeatureB", "FeatureA" })
+                    .ShouldBe(new[]
+                        {
+                            typeof(NoFeatureConstraint), typeof(FeatureA), typeof(FeatureB), 
+                            typeof(EitherABFeatures), typeof(BothABFeatures), typeof(BothABorCFeatures)
+                        });
+            }
+
+            [Test]
+            [Category("Features")]
+            public void FeatureC()
+            {
+                GetFeatureTypes(new string[] { "FeatureC" })
+                    .ShouldBe(new[] { typeof(NoFeatureConstraint), typeof(BothABorCFeatures) });
+            }
+
+            [Test]
+            [Category("Features")]
+            public void FeatureD()
+            {
+                GetFeatureTypes(new string[] { "FeatureD" })
+                    .ShouldBe(new[] { typeof(NoFeatureConstraint) });
+            }
+
+            [Test]
+            [Category("Features")]
+            public void NoFeature()
+            {
+                GetFeatureTypes(new string[] { })
+                    .ShouldBe(new[] { typeof(NoFeatureConstraint) });
+            }
+        }
+
         [FluentMigrator.Migration(20130508175300)]
         class AutoScriptMigrationFake : AutoScriptMigration { }
 
@@ -272,6 +337,29 @@ namespace FluentMigrator.Tests.Unit
                 .ShouldBe("Scripts.Down.20130508175300_AutoScriptMigrationFake_sqlserver.sql");
         }
     }
+
+    public class NoFeatureConstraint { }
+
+    [Features("FeatureA")]
+    public class FeatureA { }
+
+    [Features("FeatureB")]
+    public class FeatureB { }
+
+    [Features("FeatureC")]
+    public class FeatureC { }
+
+    [Features("FeatureA", "FeatureB")]
+    public class BothABFeatures { }
+
+    [Features("FeatureA")]
+    [Features("FeatureB")]
+    public class EitherABFeatures { }
+
+    [Features("FeatureA", "FeatureB")]
+    [Features("FeatureC")]
+    public class BothABorCFeatures { }
+
 
     [Tags("BE", "UK", "Staging", "Production")]
     public class TaggedWithBeAndUkAndProductionAndStagingInOneTagsAttribute

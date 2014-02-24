@@ -151,9 +151,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         /// If null, the class inherits from AutoReversingMigrationExt, otherwise it inherits from MigrationExt.
         /// These are project classes that inherit from AutoReversingMigration and Migration.
         /// </param>
-        /// <param name="addTags">Additional FluentMigrator Tags applied to the class</param> 
+        /// <param name="addFeatures">Additional FluentMigrator feature constraints applied to the class.</param> 
         /// <returns>true if a class was written</returns>
-        protected bool WriteMigrationClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addTags = null)
+        protected bool WriteMigrationClass(string className, Func<CodeLines> upMethod, Func<CodeLines> downMethod = null, string addFeatures = null)
         {
             // If no code is generated for an Up() method => No class is emitted
             var upMethodCode = upMethod();
@@ -194,10 +194,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 {
                     codeLines.WriteLine("[MigrationVersion({0})]", options.MigrationVersion.Replace(".", ", ") + ", " + step);
 
-                    string tags = options.Tags ?? "" + addTags ?? "";
-                    if (!string.IsNullOrEmpty(tags))
+                    string features = options.Features ?? "" + addFeatures ?? "";
+                    if (!string.IsNullOrEmpty(features))
                     {
-                        codeLines.WriteLine("[Tags(\"{0}\")]", tags.Replace(",", "\", \""));
+                        codeLines.WriteLine("[Features(\"{0}\")]", features.Replace(",", "\", \""));
                     }
 
                     string inheritFrom = downMethod == null ? "AutoReversingMigration" : "Migration";

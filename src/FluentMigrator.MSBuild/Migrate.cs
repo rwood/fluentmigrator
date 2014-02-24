@@ -87,6 +87,8 @@ namespace FluentMigrator.MSBuild
 
         public string Tags { get; set; }
 
+        public string Features { get; set; }
+
         public bool Output { get; set; }
 
         public string OutputFilename { get; set; }
@@ -148,6 +150,7 @@ namespace FluentMigrator.MSBuild
                 WorkingDirectory = WorkingDirectory,
                 Profile = Profile,
                 Tags = Tags.ToTags(),
+                Features = Features.ToTags(),
                 Timeout = Timeout,
                 TransactionPerSession = TransactionPerSession
             };

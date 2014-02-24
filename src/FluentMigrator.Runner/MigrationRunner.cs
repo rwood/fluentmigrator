@@ -84,8 +84,8 @@ namespace FluentMigrator.Runner
             _migrationScopeHandler = new MigrationScopeHandler(Processor);
             _migrationValidator = new MigrationValidator(_announcer, Conventions);
             VersionLoader = new VersionLoader(this, _migrationAssembly, Conventions);
-            MigrationLoader = new DefaultMigrationInformationLoader(Conventions, _migrationAssembly, runnerContext.Namespace, runnerContext.NestedNamespaces, runnerContext.Tags);
-            ProfileLoader = new ProfileLoader(runnerContext, this, Conventions, runnerContext.Tags);
+            MigrationLoader = new DefaultMigrationInformationLoader(Conventions, _migrationAssembly, runnerContext.Namespace, runnerContext.NestedNamespaces, runnerContext.Tags, runnerContext.Features);
+            ProfileLoader = new ProfileLoader(runnerContext, this, Conventions, runnerContext.Tags, runnerContext.Features);
         }
 
         public IVersionLoader VersionLoader { get; set; }

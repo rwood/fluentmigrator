@@ -34,8 +34,8 @@ namespace FluentMigrator
         public Func<IMigration, IMigrationInfo> GetMigrationInfo { get; set; }
         public Func<string> GetWorkingDirectory { get; set; }
         public Func<Model.ConstraintDefinition, string> GetConstraintName { get; set; }
-        public Func<Type, bool> TypeHasTags { get; set; }
         public Func<Type, IEnumerable<string>, bool> TypeHasMatchingTags { get; set; }
+        public Func<Type, IEnumerable<string>, bool> TypeHasMatchingFeatures { get; set; }
         public Func<Type, string, string> GetAutoScriptUpName { get; set; }
         public Func<Type, string, string> GetAutoScriptDownName { get; set; }
 
@@ -50,10 +50,10 @@ namespace FluentMigrator
             GetMigrationInfo = DefaultMigrationConventions.GetMigrationInfoFor;
             GetWorkingDirectory = DefaultMigrationConventions.GetWorkingDirectory;
             GetConstraintName = DefaultMigrationConventions.GetConstraintName;
-            TypeHasTags = DefaultMigrationConventions.TypeHasTags;
             TypeHasMatchingTags = DefaultMigrationConventions.TypeHasMatchingTags;
+            TypeHasMatchingFeatures = DefaultMigrationConventions.TypeHasMatchingFeatures;
             GetAutoScriptUpName = DefaultMigrationConventions.GetAutoScriptUpName;
             GetAutoScriptDownName = DefaultMigrationConventions.GetAutoScriptDownName;
-        }        
+        }
     }
 }

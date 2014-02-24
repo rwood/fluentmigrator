@@ -43,6 +43,7 @@ namespace FluentMigrator.Console
         public bool ShowHelp;
         public int Steps;
         public List<string> Tags = new List<string>();
+        public List<string> Features = new List<string>();
         public string TargetAssembly;
         public string Task;
         public int Timeout;
@@ -160,6 +161,11 @@ namespace FluentMigrator.Console
                                             "tag=",
                                             "Filters the migrations to be run by tag.",
                                             v => { Tags.Add(v); }
+                                            },
+                                        {
+                                            "feature=",
+                                            "Filters the migrations to be run by feature.",
+                                            v => { Features.Add(v); }
                                             },
                                         {
                                             "providerswitches=",
@@ -303,6 +309,7 @@ namespace FluentMigrator.Console
                 ConnectionStringConfigPath = ConnectionStringConfigPath,
                 ApplicationContext = ApplicationContext,
                 Tags = Tags,
+                Features = Features,
                 TransactionPerSession = TransactionPerSession,
                 ProviderSwitches = ProviderSwitches
             };

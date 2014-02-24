@@ -125,19 +125,34 @@ namespace FluentMigrator.Infrastructure
             return sb.ToString();
         }
 
-        public static bool TypeHasTags(Type type)
-        {
-            return type.GetOneAttribute<TagsAttribute>() != null;
-        }
-
         public static bool TypeHasMatchingTags(Type type, IEnumerable<string> tagsToMatch)
         {
             var tags = type.GetAllAttributes<TagsAttribute>().Where(x => x.TagNames != null).SelectMany(x => x.TagNames).ToArray();
+            if (!tags.Any())
+                return true;
 
-            if (tags.Any() && !tagsToMatch.Any())
+            if (!tagsToMatch.Any())
                 return false;
 
-            return tags.Any() && tagsToMatch.All(t => tags.Any(t.Equals));
+            return tagsToMatch.All(t => tags.Any(t.Equals));
+        }
+
+        public static bool TypeHasFeatures(Type type)
+        {
+            return type.GetOneAttribute<FeaturesAttribute>() != null;
+        }
+
+        public static bool TypeHasMatchingFeatures(Type type, IEnumerable<string> featuresSelected)
+        {
+            // Place one or more FeaturesAttribute instances on a Migration class to act as 'guard' condition.
+            
+            // Each FeaturesAttribute instance is an OR condition, the list of names in FeaturesAttribute.FeatureNames is an AND condition.
+            // So ("ABC" && "DEF") || "GHI"  becomes:
+            //    [Features("ABC", "DEF")]
+            //    [Features("GHI")]
+
+            var orConds = type.GetAllAttributes<FeaturesAttribute>().Where(t => t.FeatureNames != null && t.FeatureNames.Any()).ToArray();
+            return !orConds.Any() || (orConds.Any(andCond => andCond.FeatureNames.All(featuresSelected.Contains))) ;
         }
 
         public static string GetAutoScriptUpName(Type type, string databaseType)

@@ -35,19 +35,20 @@ namespace FluentMigrator.Runner
     public class DefaultMigrationInformationLoader : IMigrationInformationLoader
     {
         public DefaultMigrationInformationLoader(IMigrationConventions conventions, Assembly assembly, string @namespace,
-                                                 IEnumerable<string> tagsToMatch)
-            : this(conventions, assembly, @namespace, false, tagsToMatch)
+                                                 IEnumerable<string> tagsToMatch, IEnumerable<string> featuresToMatch)
+            : this(conventions, assembly, @namespace, false, tagsToMatch, featuresToMatch)
         {
         }
 
         public DefaultMigrationInformationLoader(IMigrationConventions conventions, Assembly assembly, string @namespace,
-                                                 bool loadNestedNamespaces, IEnumerable<string> tagsToMatch)
+                                                 bool loadNestedNamespaces, IEnumerable<string> tagsToMatch, IEnumerable<string> featuresToMatch)
         {
             Conventions = conventions;
             Assembly = assembly;
             Namespace = @namespace;
             LoadNestedNamespaces = loadNestedNamespaces;
             TagsToMatch = tagsToMatch ?? new string[] {};
+            FeaturesToMatch = featuresToMatch ?? new string[] { };
         }
 
         public IMigrationConventions Conventions { get; private set; }
@@ -55,6 +56,7 @@ namespace FluentMigrator.Runner
         public string Namespace { get; private set; }
         public bool LoadNestedNamespaces { get; private set; }
         public IEnumerable<string> TagsToMatch { get; private set; }
+        public IEnumerable<string> FeaturesToMatch { get; private set; }
 
         public SortedList<long, IMigrationInfo> LoadMigrations()
         {
@@ -80,10 +82,9 @@ namespace FluentMigrator.Runner
         private IEnumerable<IMigration> FindMigrations()
         {
             IEnumerable<Type> matchedTypes = Assembly.GetExportedTypes()
-                                                     .Where(t => Conventions.TypeIsMigration(t)
-                                                                 &&
-                                                                 (Conventions.TypeHasMatchingTags(t, TagsToMatch) ||
-                                                                  !Conventions.TypeHasTags(t)));
+                .Where(t => Conventions.TypeIsMigration(t)
+                        && (Conventions.TypeHasMatchingTags(t, TagsToMatch) /*|| !Conventions.TypeHasTags(t)*/)
+                        && (Conventions.TypeHasMatchingFeatures(t, FeaturesToMatch)));
 
             if (!string.IsNullOrEmpty(Namespace))
             {

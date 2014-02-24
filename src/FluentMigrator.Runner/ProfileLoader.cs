@@ -9,13 +9,14 @@ namespace FluentMigrator.Runner
 {
     public class ProfileLoader : IProfileLoader
     {
-        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions, IEnumerable<string> tagsToMatch = null)
+        public ProfileLoader(IRunnerContext runnerContext, IMigrationRunner runner, IMigrationConventions conventions, IEnumerable<string> tagsToMatch = null, IEnumerable<string> featuresToMatch = null)
         {
             Runner = runner;
             Assembly = runner.MigrationAssembly;
             Profile = runnerContext.Profile;
             Conventions = conventions;
-            TagsToMatch = (tagsToMatch ?? new string[] {}).ToArray();
+            TagsToMatch = (tagsToMatch ?? new string[] { }).ToArray();
+            FeaturesToMatch = (featuresToMatch ?? new string[] { }).ToArray();
 
             Initialize();
         }
@@ -23,6 +24,7 @@ namespace FluentMigrator.Runner
         private Assembly Assembly { get; set; }
         private string Profile { get; set; }
         private IEnumerable<string> TagsToMatch { get; set; }
+        private IEnumerable<string> FeaturesToMatch { get; set; }
 
         protected IMigrationConventions Conventions { get; set; }
         private IMigrationRunner Runner { get; set; }
@@ -46,7 +48,8 @@ namespace FluentMigrator.Runner
             return from type in profileClasses
                 let profileName = type.GetOneAttribute<ProfileAttribute>().ProfileName.ToLower()
                 where (profiles.Contains(profileName) || profileName == "*")
-                    && (!Conventions.TypeHasTags(type) || Conventions.TypeHasMatchingTags(type, TagsToMatch))
+                    && (Conventions.TypeHasMatchingTags(type, TagsToMatch))
+                    && (Conventions.TypeHasMatchingFeatures(type, FeaturesToMatch))
                 orderby type.FullName
                 select type.Assembly.CreateInstance(type.FullName) as IMigration;
         }

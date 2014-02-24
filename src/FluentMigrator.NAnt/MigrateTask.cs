@@ -67,6 +67,9 @@ namespace FluentMigrator.NAnt
         [TaskAttribute("tags")]
         public string Tags { get; set; }
 
+        [TaskAttribute("features")]
+        public string Features { get; set; }
+
         [TaskAttribute("timeout")]
         public int Timeout { get; set; }
 
@@ -124,6 +127,7 @@ namespace FluentMigrator.NAnt
                                         WorkingDirectory = WorkingDirectory,
                                         Profile = Profile,
                                         Tags = Tags.ToTags(),
+                                        Features = Features.ToTags(),
                                         Timeout = Timeout,
                                         TransactionPerSession = TransactionPerSession
                                     };

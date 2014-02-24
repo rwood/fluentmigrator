@@ -36,7 +36,7 @@ namespace FluentMigrator.SchemaGen
         string MigrationVersion { get; }
         int StepStart { get; }
         int StepEnd { get; }
-        string Tags { get; }
+        string Features { get; }
 
         string IncludeTables { get; }
         string ExcludeTables { get; }
@@ -101,8 +101,8 @@ namespace FluentMigrator.SchemaGen
         [Option("step-end", DefaultValue = -1, HelpText = "Last step number. Adds a final Migration class just to set the step value. Useful when merging migration classes in one DLL or ensuring that Install and Upgrade migrations reach a matching step number.")]
         public int StepEnd { get; set; }
 
-        [Option("tags", DefaultValue = "", HelpText = "Example: --tags abc,def Adds [Tags(\"abc\", \"def\")] attribute to all generated C# classes.")]
-        public string Tags { get; set; }
+        [Option("features", DefaultValue = "", HelpText = "Example: --features abc,def Adds [Features(\"abc\", \"def\")] attribute to all generated C# classes.")]
+        public string Features { get; set; }
 
         [Option("use-deprecated-types", DefaultValue = false, HelpText = "Use deprecated types TEXT, NTEXT and IMAGE normalled converted to VARCHAR(MAX), NVARCHAR(MAX) and VARBINARY(MAX).")]
         public bool UseDeprecatedTypes { get; set; }
