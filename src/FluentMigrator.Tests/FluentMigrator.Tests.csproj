@@ -274,6 +274,7 @@
     <Compile Include="Unit\Expressions\AlterDefaultConstraintExpressionTests.cs" />
     <Compile Include="Unit\Expressions\AlterSchemaExpressionTests.cs" />
     <Compile Include="Unit\Expressions\AlterTableExpressionTests.cs" />
+    <Compile Include="Unit\Expressions\ExecuteScriptsInDirectoryExpressionTests.cs" />
     <Compile Include="Unit\Expressions\CreateColumnExpressionTests.cs" />
     <Compile Include="Unit\Expressions\CreateConstraintExpressionTests.cs" />
     <Compile Include="Unit\Expressions\CreateForeignKeyExpressionTests.cs" />
@@ -289,7 +290,7 @@
     <Compile Include="Unit\Expressions\DeleteSchemaExpressionTests.cs" />
     <Compile Include="Unit\Expressions\DeleteSequenceExpressionTests.cs" />
     <Compile Include="Unit\Expressions\DeleteTableExpressionTests.cs" />
-    <Compile Include="Unit\Expressions\ExecuteEmbeddedSqlExpressionTests.cs" />
+    <Compile Include="Unit\Expressions\ExecuteEmbeddedSqlScriptExpressionTests.cs" />
     <Compile Include="Unit\Expressions\ExecuteSqlScriptExpressionTests.cs" />
     <Compile Include="Unit\Expressions\ExecuteSqlStatementExpressionTests.cs" />
     <Compile Include="Unit\Expressions\PerformDBOperationExpressionTests.cs" />
@@ -477,6 +478,63 @@
     <EmbeddedResource Include="EmbeddedResources\B\NotUniqueResource.sql" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="SQL2\1_Pre\pre2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\1_Pre\pre1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\2_PerTable\up_table1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\2_PerTable\up_table2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\2_PerTable\up_table2.TAG1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\2_PerTable\up_table2.TAG1.TAG2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\sample3c.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\sample3a.TAG1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\diff_prefix.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\sample3b.TAG2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1.TAG2\sample4.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1\sample7.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1\sample6.TAG2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1\sample5.TAG2.TAG3.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1\TAG2\sample9.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\3_Post\TAG1\TAG2\sample8.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\sample0.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\sample1.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL2\sample2.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Unit\Initialization\Fixtures\WithConnectionString.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

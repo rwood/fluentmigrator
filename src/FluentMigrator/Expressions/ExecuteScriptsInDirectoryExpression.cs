@@ -31,7 +31,7 @@ namespace FluentMigrator.Expressions
         /// <summary>
         /// Selects SQL files that contain ALL fo these tags in their relative path.
         /// </summary>
-        public readonly IList<string> ScriptTags = new List<string>();
+        public IList<string> ScriptTags = new List<string>();
 
         /// <summary>
         /// If set, split up SQL Server format script files containing multiple statements and send them to ANY database type (not just SQL Server).
@@ -45,7 +45,7 @@ namespace FluentMigrator.Expressions
 
         private static readonly Regex goSplitter = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
-        protected IEnumerable<FileInfo> GetSqlFiles()
+        private IEnumerable<FileInfo> GetSqlFiles()
         {
             var sqlDir = new DirectoryInfo(SqlScriptDirectory);
 
@@ -80,7 +80,7 @@ namespace FluentMigrator.Expressions
             // we're allow GO statements as a statement delimiter for all database providers.
             if (SplitGO && sqlText.Contains("GO"))
             {
-                return goSplitter.Split(sqlText);
+                return goSplitter.Split(sqlText + " ");
             }
             else
             {
@@ -93,13 +93,13 @@ namespace FluentMigrator.Expressions
             foreach (var file in GetSqlFiles())
             {
                 string allText = File.ReadAllText(file.FullName);
-                foreach (string sqlStatement in GetStatements(allText))
+                foreach (string sqlStatement in GetStatements(allText).Where(t => t.Trim() != string.Empty))
                 {
                     // since all the Processors are using String.Format() in their Execute method  we need to escape the brackets 
                     // with double brackets or else it throws an incorrect format error on the String.Format call
                     var sqlStatement1 = sqlStatement.Replace("{", "{{").Replace("}", "}}");
 
-                    processor.Execute(sqlStatement1);
+                    processor.Execute(sqlStatement1, null);
                 }
             }
         }
@@ -112,15 +112,16 @@ namespace FluentMigrator.Expressions
         public override void CollectValidationErrors(ICollection<string> errors)
         {
             if (string.IsNullOrEmpty(SqlScriptDirectory))
-                errors.Add(ErrorMessages.SqlScriptCannotBeNullOrEmpty);
+                errors.Add(ErrorMessages.SqlScriptDirectoryCannotBeNullOrEmpty);
         }
 
         public override string ToString()
         {
-            return string.Format("{0}{1}/{2}, Tags: {3}", 
+            return string.Format("{0}{1}/{2}{3}{4}",
                                  base.ToString(), 
                                  SqlScriptDirectory, 
                                  SearchOption == SearchOption.AllDirectories ? "**" : "*",
+                                 ScriptTags.Any() ? ", Tags: " : "",
                                  string.Join(",", ScriptTags.ToArray()));
         }
     }
