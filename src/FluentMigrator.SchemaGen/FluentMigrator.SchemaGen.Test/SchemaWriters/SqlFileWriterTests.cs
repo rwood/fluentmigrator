@@ -83,7 +83,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         }
 
         [Test]
-        public void CanLinkSqlDirectoryWithTaggedFiles1()
+        public void CanLinkSqlDirectoryWithTaggedFiles()
         {
             CodeLines lines = writer.ExecuteSqlDirectory(new DirectoryInfo(@"SQL"));
             lines.Count().ShouldBe(2);
@@ -91,7 +91,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         }
 
         [Test]
-        public void CanEmbedSqlDirectoryWithTaggedFiles2()
+        public void CanEmbedSqlDirectoryWithTaggedFiles()
         {
             options.EmbedSql = true;            // Turn ON
             var actual = writer.ExecuteSqlDirectory(new DirectoryInfo(@"SQL\3_Post")).ToArray();

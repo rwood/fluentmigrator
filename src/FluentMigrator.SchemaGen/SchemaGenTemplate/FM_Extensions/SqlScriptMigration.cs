@@ -29,7 +29,7 @@ namespace Migrations.FM_Extensions
         public override void Up()
         {
             // Filter SQL files by current database type or instance.
-            Execute.ScriptsInDirectory(sqlFolder, searchOption).WithTags(tags).WithTag(this.GetCurrentDatabaseTag());
+            Execute.ScriptsInDirectory(sqlFolder, searchOption).WithTags(tags).WithTag(this.GetDbTag());
         }
 
         public override void Down()
