@@ -1,5 +1,6 @@
-﻿// sample2.sql
-Execute.Sql(@"INSERT INTO Production.UnitMeasure
+﻿Execute.Sql(@"/* sample2.sql */
+	INSERT INTO Production.UnitMeasure
 	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-Execute.Sql(@"INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
+Execute.Sql(@"/* sample2.sql */
+	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
 	VALUES (N'Square Yards', N'Y2', GETDATE());");
