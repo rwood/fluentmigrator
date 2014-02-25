@@ -99,7 +99,7 @@ namespace FluentMigrator.Expressions
                     // with double brackets or else it throws an incorrect format error on the String.Format call
                     var sqlStatement1 = sqlStatement.Replace("{", "{{").Replace("}", "}}");
 
-                    processor.Execute(sqlStatement1, null);
+                    processor.Execute(sqlStatement1);
                 }
             }
         }
