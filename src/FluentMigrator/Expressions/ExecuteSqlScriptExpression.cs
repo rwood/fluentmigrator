@@ -16,6 +16,7 @@
 //
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentMigrator.Infrastructure;
@@ -28,12 +29,19 @@ namespace FluentMigrator.Expressions
 
         public override void ExecuteWith(IMigrationProcessor processor)
         {
-            string sqlText = File.ReadAllText(SqlScript);
+            try
+            {
+                string sqlText = File.ReadAllText(SqlScript);
 
-            // since all the Processors are using String.Format() in their Execute method
-            //  we need to escape the brackets with double brackets or else it throws an incorrect format error on the String.Format call
-            sqlText = sqlText.Replace("{", "{{").Replace("}", "}}");
-            processor.Execute(sqlText);
+                // since all the Processors are using String.Format() in their Execute method
+                //  we need to escape the brackets with double brackets or else it throws an incorrect format error on the String.Format call
+                sqlText = sqlText.Replace("{", "{{").Replace("}", "}}");
+                processor.Execute(sqlText);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("{0}: Failed to execute SQL script", SqlScript), ex);
+            }
         }
 
         public override void ApplyConventions(IMigrationConventions conventions)

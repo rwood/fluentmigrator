@@ -29,7 +29,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 {
     public interface ISqlFileWriter
     {
-        CodeLines EmbedSql(string sqlStatement);
+        CodeLines EmbedSql(string sqlStatement, string relPath = null);
         CodeLines EmbedSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlDirectory(DirectoryInfo subfolder);
@@ -66,8 +66,14 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return dir.FullName.Substring(relativeTo.FullName.Length + 1);
         }
 
-        public CodeLines EmbedSql(string sqlStatement)
+        public CodeLines EmbedSql(string sqlStatement, string relPath = null)
         {
+            if (relPath != null)
+            {
+                // Embed file path (relative to SQL directory) as a comment so if the code fails we know which file it came from.
+                sqlStatement = string.Format("/* {0} */\n", relPath) + sqlStatement;
+            }
+
             var sqlLines = sqlStatement.Replace("\r", "").Split('\n').Where(line => line.Trim().Length > 0).ToArray();
 
             var codeLines = new CodeLines();
@@ -109,17 +115,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
             bool first = true;
+            string relPath = GetRelativePath(sqlFile, options.SqlBaseDirectory);
+
             foreach (var sqlStatment in goStatement.Split(allLines).Where(t => t.Trim().Length > 0))
             {
                 if (first)
                 {
                     first = false;
                     announcer.Say(sqlFile.FullName + ": Importing SQL script.");
-                    lines.WriteComment(GetRelativePath(sqlFile, options.SqlBaseDirectory));
                 }
 
-                lines.WriteLines(EmbedSql(sqlStatment));
+                lines.WriteLines(EmbedSql(sqlStatment, relPath));
             }
+
             return lines;
         }
 

@@ -99,17 +99,12 @@ namespace FluentMigrator.Runner.Initialization
             {
                 using (var message = new StringWriter())
                 {
-                    message.WriteLine(ex.Message);
-
                     // Inner messages are frequently useful for diagnosing SQL exceptions.
-                    if (ex.InnerException != null)
+                    for (Exception e = ex; e != null; e = e.InnerException)
                     {
-                        message.WriteLine(ex.InnerException.Message);
-                        if (ex.InnerException.InnerException != null)
-                        {
-                            message.WriteLine(ex.InnerException.InnerException.Message);
-                        }
+                        message.WriteLine(e.Message);
                     }
+
                     message.Write(ex.StackTrace);
 
                     throw new Exception(message.ToString(), ex);

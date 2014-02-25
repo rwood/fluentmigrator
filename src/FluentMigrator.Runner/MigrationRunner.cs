@@ -385,7 +385,10 @@ namespace FluentMigrator.Runner
                 }
                 catch (Exception er)
                 {
-                    _announcer.Error(er.Message);
+                    for (var ex = er; ex != null; ex = ex.InnerException) 
+                    {
+                         _announcer.Error(ex.Message);
+                    }
 
                     //catch the error and move onto the next expression
                     if (SilentlyFail)

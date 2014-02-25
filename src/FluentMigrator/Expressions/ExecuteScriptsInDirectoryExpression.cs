@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -93,13 +94,22 @@ namespace FluentMigrator.Expressions
             foreach (var file in GetSqlFiles())
             {
                 string allText = File.ReadAllText(file.FullName);
+                int nStatement = 0;
                 foreach (string sqlStatement in GetStatements(allText).Where(t => t.Trim() != string.Empty))
                 {
+                    nStatement++;
                     // since all the Processors are using String.Format() in their Execute method  we need to escape the brackets 
                     // with double brackets or else it throws an incorrect format error on the String.Format call
                     var sqlStatement1 = sqlStatement.Replace("{", "{{").Replace("}", "}}");
 
-                    processor.Execute(sqlStatement1);
+                    try
+                    {
+                        processor.Execute(sqlStatement1);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(string.Format("{0}: Failed to execute statement #{1} in SQL script", file.FullName, nStatement), ex);
+                    }
                 }
             }
         }

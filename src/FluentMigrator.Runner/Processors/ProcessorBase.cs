@@ -229,13 +229,9 @@ namespace FluentMigrator.Runner.Processors
                 message.WriteLine("The error was {0}", ex.Message);
 
                 // Inner messages are frequently useful for diagnosing SQL exceptions.
-                if (ex.InnerException != null)
+                for (Exception e = ex; e != null; e = e.InnerException)
                 {
-                    message.WriteLine(ex.InnerException.Message);
-                    if (ex.InnerException.InnerException != null)
-                    {
-                        message.WriteLine(ex.InnerException.InnerException.Message);
-                    }
+                    message.WriteLine(e.Message);
                 }
 
                 throw new Exception(message.ToString(), ex);
