@@ -36,11 +36,19 @@ namespace FluentMigrator.SchemaGen
         string MigrationVersion { get; }
         int StepStart { get; }
         int StepEnd { get; }
+
+        /// <summary>
+        /// "ABC,DEF|GHI"   =>  ("ABC" && "DEF") || "GHI
+        /// </summary>
         string Features { get; }
 
         string IncludeTables { get; }
         string ExcludeTables { get; }
 
+        // we store paths relative to this base directory
+        string SqlBaseDir { get; }
+
+        // This is where SQL for this code gen lives under the base directory
         string SqlDir { get; }
         bool EmbedSql { get; }
 
@@ -58,6 +66,7 @@ namespace FluentMigrator.SchemaGen
         bool IsInstall { get; } 
         bool IsUpgrade { get; }
 
+        DirectoryInfo SqlBaseDirectory { get; }
         DirectoryInfo SqlDirectory { get; }
         DirectoryInfo SqlPreDirectory { get; }
         DirectoryInfo SqlPerTableDirectory { get; }
@@ -101,7 +110,7 @@ namespace FluentMigrator.SchemaGen
         [Option("step-end", DefaultValue = -1, HelpText = "Last step number. Adds a final Migration class just to set the step value. Useful when merging migration classes in one DLL or ensuring that Install and Upgrade migrations reach a matching step number.")]
         public int StepEnd { get; set; }
 
-        [Option("features", DefaultValue = "", HelpText = "Example: --features abc,def Adds [Features(\"abc\", \"def\")] attribute to all generated C# classes.")]
+        [Option("features", DefaultValue = "", HelpText = "Example: --features ABC,DEF|GHI Adds [Features(\"ABC\", \"DEF\")] and [Features(\"GHI\")] attributes to all generated C# classes.")]
         public string Features { get; set; }
 
         [Option("use-deprecated-types", DefaultValue = false, HelpText = "Use deprecated types TEXT, NTEXT and IMAGE normalled converted to VARCHAR(MAX), NVARCHAR(MAX) and VARBINARY(MAX).")]
@@ -125,7 +134,10 @@ namespace FluentMigrator.SchemaGen
         [Option("set-not-null-default", DefaultValue = false, HelpText = "When a column NULL -> NOT NULL and has a default value, runs SQL to set the new default on all NULL values")]
         public bool SetNotNullDefault { get; set; }
 
-        [Option("sql-dir", DefaultValue = "SQL", HelpText = "SQL script directory .")]
+        [Option("sql-base", DefaultValue = "SQL", HelpText = "SQL script directory.  Becomes the WorkingDirectory when migrations run.")]
+        public string SqlBaseDir { get; set; }
+
+        [Option("sql-dir", DefaultValue = null, HelpText = "SQL sub directory containing SQL for this code gen.")]
         public string SqlDir { get; set; }
 
         [Option("embed-sql", DefaultValue = true, HelpText = "If true, embeds SQL scripts into the migration class. Otherwise, links to the SQL file path. Tip: Set to false during development, then true when deploying or when building for a specific database type.")]
@@ -163,9 +175,14 @@ namespace FluentMigrator.SchemaGen
             get { return !string.IsNullOrEmpty(Db1) && !string.IsNullOrEmpty(Db2); }
         }
 
+        public DirectoryInfo SqlBaseDirectory
+        {
+            get { return new DirectoryInfo(SqlBaseDir ?? "SQL"); }
+        }
+
         public DirectoryInfo SqlDirectory
         {
-            get { return new DirectoryInfo(SqlDir); }
+            get { return new DirectoryInfo(SqlDir ?? "SQL"); }
         }
 
         public DirectoryInfo SqlPreDirectory

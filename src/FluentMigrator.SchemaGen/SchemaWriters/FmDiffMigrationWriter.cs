@@ -140,6 +140,18 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return classPaths;
         }
 
+        private IEnumerable<string> GetFeatures(string features)
+        {
+            // ABC,DEF|GHI  ==>  [Features(\"ABC\", \"DEF\")] and [Features(\"GHI\")] 
+
+            if (string.IsNullOrEmpty(features)) 
+                return new string[]{};
+
+            return from feature in features.Split('|').Select(f => f.Trim())
+                   where feature != string.Empty
+                   select string.Format(@"[Features(""{0}"")]", feature.Replace(",", "\", \""));
+        }
+
         /// <summary>
         /// Writes a Migrator class.
         /// Only creates the class file if the <paramref name="upMethod"/> emits code.
@@ -195,10 +207,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     codeLines.WriteLine("[MigrationVersion({0})]", options.MigrationVersion.Replace(".", ", ") + ", " + step);
 
                     string features = options.Features ?? "" + addFeatures ?? "";
-                    if (!string.IsNullOrEmpty(features))
-                    {
-                        codeLines.WriteLine("[Features(\"{0}\")]", features.Replace(",", "\", \""));
-                    }
+                    codeLines.WriteLines(GetFeatures(features));
 
                     string inheritFrom = downMethod == null ? "AutoReversingMigration" : "Migration";
                     codeLines.WriteLine("public class {0} : {1}", className, inheritFrom);

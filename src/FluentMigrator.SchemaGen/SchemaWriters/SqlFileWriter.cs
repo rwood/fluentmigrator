@@ -115,7 +115,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 {
                     first = false;
                     announcer.Say(sqlFile.FullName + ": Importing SQL script.");
-                    lines.WriteComment(GetRelativePath(sqlFile, options.SqlDirectory));
+                    lines.WriteComment(GetRelativePath(sqlFile, options.SqlBaseDirectory));
                 }
 
                 lines.WriteLines(EmbedSql(sqlStatment));
@@ -141,7 +141,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             {
                 // Add even if file does not yet exist.
                 lines.WriteLine();
-                string scriptPath = GetRelativePath(sqlFile, options.SqlDirectory).Replace("\\", "\\\\");
+                string scriptPath = GetRelativePath(sqlFile, options.SqlBaseDirectory).Replace("\\", "\\\\");
                 lines.WriteLine("Execute.Script(\"{0}\");", scriptPath);   
             }
             return lines;
@@ -192,7 +192,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
                     lines.WriteLine();
                     lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithTag({1}).WithGos();",
-                        GetRelativePath(dir, options.SqlDirectory).Replace("\\", "\\\\"), CallGetDbTag);
+                        GetRelativePath(dir, options.SqlBaseDirectory).Replace("\\", "\\\\"), CallGetDbTag);
                 }
             }
             return lines;
@@ -237,11 +237,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             if (options.PerTableScripts)
             {
                 var perTableDir = options.SqlPerTableDirectory;
-                string perTableDirRel = GetRelativePath(perTableDir, options.SqlDirectory).Replace("\\", "\\\\");
                 
                 // Example: "up_MyTable_SS_OCL.sql"   where prefix is "up_MyTable" and it's tagged to run for SQL Server (SS) and Oracle (OCL)
                 // Tags used depend on the rule you create in MigrationExt.GetCurrentDatabaseTag()
-                string scriptPrefix = (isCreate ? "CR_" : "UP_") + tableName;
+                string scriptPrefix = (isCreate ? "cr_" : "up_") + tableName;
 
                 if (options.EmbedSql)
                 {
@@ -252,9 +251,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                     foreach (var file in files)
                     {
                         // Get a path relative to the PerTable directory
-                        string relPath = GetRelativePath(file, options.SqlPerTableDirectory);
+                        string relPathForTags = GetRelativePath(file, options.SqlPerTableDirectory);
 
-                        var fileTags = GetFilePathTags(relPath, scriptPrefix);
+                        var fileTags = GetFilePathTags(relPathForTags, scriptPrefix);
 
                         // Generates if(tags) {} condition to test for each tag used in SQL files.
                         FileInfo file1 = file;
@@ -263,6 +262,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 }
                 else
                 {
+                    string perTableDirRel = GetRelativePath(perTableDir, options.SqlBaseDirectory).Replace("\\", "\\\\");
+
                     lines.WriteLine();
                     lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithPrefix(\"{1}\").WithTag({2}).WithGos();",
                          perTableDirRel, scriptPrefix, CallGetDbTag);
