@@ -72,11 +72,11 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\SwitchExtensions.cs" />
     <Compile Include="MSBuild\FmCodeGen.cs" />
-    <Compile Include="Model\ColumnDefinitionExt.cs" />
-    <Compile Include="Model\ForeignKeyDefinitionExt.cs" />
-    <Compile Include="Model\ICodeComparable.cs" />
-    <Compile Include="Model\IndexDefinitionExt.cs" />
-    <Compile Include="Model\TableDefinitionExt.cs" />
+    <Compile Include="SchemaWriters\Model\ColumnDefinitionExt.cs" />
+    <Compile Include="SchemaWriters\Model\ForeignKeyDefinitionExt.cs" />
+    <Compile Include="SchemaWriters\Model\ICodeComparable.cs" />
+    <Compile Include="SchemaWriters\Model\IndexDefinitionExt.cs" />
+    <Compile Include="SchemaWriters\Model\TableDefinitionExt.cs" />
     <Compile Include="SchemaGenOptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

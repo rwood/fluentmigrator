@@ -24,8 +24,8 @@ using System.Linq;
 using System.Text;
 using FluentMigrator.Runner;
 using FluentMigrator.SchemaGen.Extensions;
-using FluentMigrator.SchemaGen.Model;
 using FluentMigrator.SchemaGen.SchemaReaders;
+using FluentMigrator.SchemaGen.SchemaWriters.Model;
 
 namespace FluentMigrator.SchemaGen.SchemaWriters
 {

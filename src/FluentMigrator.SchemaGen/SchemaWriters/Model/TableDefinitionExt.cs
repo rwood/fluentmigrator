@@ -18,9 +18,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using FluentMigrator.SchemaGen.SchemaWriters;
 
-namespace FluentMigrator.SchemaGen.Model
+namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 {
     public class TableDefinitionExt
     {

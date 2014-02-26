@@ -27,7 +27,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FluentMigrator.Model;
 using FluentMigrator.SchemaGen.Extensions;
-using FluentMigrator.SchemaGen.Model;
+using FluentMigrator.SchemaGen.SchemaWriters.Model;
 
 
 namespace FluentMigrator.SchemaGen.SchemaReaders

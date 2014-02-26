@@ -22,9 +22,8 @@ using System.Text;
 using FluentMigrator.Model;
 using FluentMigrator.SchemaGen.Extensions;
 using FluentMigrator.SchemaGen.SchemaReaders;
-using FluentMigrator.SchemaGen.SchemaWriters;
 
-namespace FluentMigrator.SchemaGen.Model
+namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 {
     public class ColumnDefinitionExt : ColumnDefinition, ICodeComparable
     {

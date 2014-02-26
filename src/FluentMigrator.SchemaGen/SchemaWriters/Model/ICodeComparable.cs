@@ -16,7 +16,7 @@
 //
 #endregion
 
-namespace FluentMigrator.SchemaGen.Model
+namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 {
     public interface ICodeComparable
     {

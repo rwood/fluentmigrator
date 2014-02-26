@@ -4,8 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using FluentMigrator.Model;
-using FluentMigrator.SchemaGen.Model;
 using FluentMigrator.SchemaGen.SchemaWriters;
+using FluentMigrator.SchemaGen.SchemaWriters.Model;
 
 namespace FluentMigrator.SchemaGen.SchemaReaders
 {

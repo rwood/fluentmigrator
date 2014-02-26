@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using FluentMigrator.Model;
 
-namespace FluentMigrator.SchemaGen.Model
+namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 {
     public class ForeignKeyDefinitionExt: ForeignKeyDefinition, ICodeComparable
     {

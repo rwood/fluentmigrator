@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentMigrator.SchemaGen.Model;
+using FluentMigrator.SchemaGen.SchemaWriters.Model;
 
 namespace FluentMigrator.SchemaGen.Extensions
 {
