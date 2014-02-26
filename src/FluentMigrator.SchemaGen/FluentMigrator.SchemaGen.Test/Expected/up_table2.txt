@@ -1,27 +1,27 @@
 
-Execute.Sql(@"/* 2_PerTable\up_table2.sql */
+Execute.Sql(@"/* Statement #1 in '2_PerTable\up_table2.sql' */
 	INSERT INTO Production.UnitMeasure
 	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-Execute.Sql(@"/* 2_PerTable\up_table2.sql */
+Execute.Sql(@"/* Statement #2 in '2_PerTable\up_table2.sql' */
 	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
 	VALUES (N'Square Yards', N'Y2', GETDATE());");
 
 if (this.GetDbTag() == "TAG1")
 {
-    Execute.Sql(@"/* 2_PerTable\up_table2.TAG1.sql */
+    Execute.Sql(@"/* Statement #1 in '2_PerTable\up_table2.TAG1.sql' */
     	INSERT INTO Production.UnitMeasure
     	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-    Execute.Sql(@"/* 2_PerTable\up_table2.TAG1.sql */
+    Execute.Sql(@"/* Statement #2 in '2_PerTable\up_table2.TAG1.sql' */
     	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
     	VALUES (N'Square Yards', N'Y2', GETDATE());");
 }
 
 if (this.GetDbTag() == "TAG1" || this.GetDbTag() == "TAG2")
 {
-    Execute.Sql(@"/* 2_PerTable\up_table2.TAG1.TAG2.sql */
+    Execute.Sql(@"/* Statement #1 in '2_PerTable\up_table2.TAG1.TAG2.sql' */
     	INSERT INTO Production.UnitMeasure
     	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-    Execute.Sql(@"/* 2_PerTable\up_table2.TAG1.TAG2.sql */
+    Execute.Sql(@"/* Statement #2 in '2_PerTable\up_table2.TAG1.TAG2.sql' */
     	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
     	VALUES (N'Square Yards', N'Y2', GETDATE());");
 }

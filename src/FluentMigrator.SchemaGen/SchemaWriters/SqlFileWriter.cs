@@ -29,7 +29,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 {
     public interface ISqlFileWriter
     {
-        CodeLines EmbedSql(string sqlStatement, string relPath = null);
+        CodeLines EmbedSql(string sqlStatement, string relPath = null, int nStatement = 0);
         CodeLines EmbedSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlDirectory(DirectoryInfo subfolder);
@@ -66,12 +66,12 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return dir.FullName.Substring(relativeTo.FullName.Length + 1);
         }
 
-        public CodeLines EmbedSql(string sqlStatement, string relPath = null)
+        public CodeLines EmbedSql(string sqlStatement, string relPath = null, int nStatement = 0)
         {
             if (relPath != null)
             {
                 // Embed file path (relative to SQL directory) as a comment so if the code fails we know which file it came from.
-                sqlStatement = string.Format("/* {0} */\n", relPath) + sqlStatement;
+                sqlStatement = string.Format("/* Statement #{0} in '{1}' */\n", nStatement, relPath) + sqlStatement;
             }
 
             var sqlLines = sqlStatement.Replace("\r", "").Split('\n').Where(line => line.Trim().Length > 0).ToArray();
@@ -114,18 +114,18 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             Regex goStatement = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
-            bool first = true;
             string relPath = GetRelativePath(sqlFile, options.SqlBaseDirectory);
 
+            int nStatement = 0;
             foreach (var sqlStatment in goStatement.Split(allLines).Where(t => t.Trim().Length > 0))
             {
-                if (first)
+                nStatement++;
+                if (nStatement == 1)
                 {
-                    first = false;
                     announcer.Say(sqlFile.FullName + ": Importing SQL script.");
                 }
 
-                lines.WriteLines(EmbedSql(sqlStatment, relPath));
+                lines.WriteLines(EmbedSql(sqlStatment, relPath, nStatement));
             }
 
             return lines;

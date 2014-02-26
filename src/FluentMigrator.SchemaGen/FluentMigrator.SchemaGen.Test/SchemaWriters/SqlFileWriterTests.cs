@@ -67,7 +67,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
             options.EmbedSql = true;            // Turn ON
             var lines = writer.ExecuteSqlFile(new FileInfo(SQL_DIR + "\\sample1.sql")).ToArray();
             lines.Length.ShouldBe(2);
-            lines[0].ShouldBe(@"Execute.Sql(@""/* sample1.sql */");
+            lines[0].ShouldBe(@"Execute.Sql(@""/* Statement #1 in 'sample1.sql' */");
             lines[1].ShouldBe("\tDROP TABLE [Users]\");");
         }
 
@@ -82,7 +82,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         public void CanEmbedTaggedSqlFile()
         {
             string[] actual = writer.EmbedSqlFile(new FileInfo(SQL_DIR + "\\sample2.sql")).ToArray();
-            //File.WriteAllLines(@"sample2.txt", actual); // Capture regression to Debug folder
+            File.WriteAllLines(@"sample2.txt", actual); // Capture regression to Debug folder
 
             string[] expected = File.ReadAllLines(@"Expected\sample2.txt");
             actual.ShouldBe(expected);
@@ -101,7 +101,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         {
             options.EmbedSql = true;            // Turn ON
             var actual = writer.ExecuteSqlDirectory(new DirectoryInfo(SQL_DIR + "\\3_Post")).ToArray();
-            //File.WriteAllLines(@"embed-all.txt", actual); // Capture regression to Debug folder
+            File.WriteAllLines(@"embed-all.txt", actual); // Capture regression to Debug folder
 
             string[] expected= File.ReadAllLines(@"Expected\embed-all.txt");
             actual.ShouldBe(expected);
@@ -119,7 +119,7 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
             options.PerTableScripts = true;
             var actual2 = writer.ExecutePerTableSqlScripts(false, "table2").ToArray();
 
-            //File.WriteAllLines(@"up_table2.txt", actual2); // Capture regression to Debug folder
+            File.WriteAllLines(@"up_table2.txt", actual2); // Capture regression to Debug folder
 
             string[] expected = File.ReadAllLines(@"Expected\up_table2.txt");
             actual2.ShouldBe(expected);

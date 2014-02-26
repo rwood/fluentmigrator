@@ -5,31 +5,31 @@ if (this.GetDbTag() == "TAG1")
     if (this.GetDbTag() == "TAG2")
     {
         
-        Execute.Sql(@"/* 3_Post\TAG1\TAG2\sample3.sql */
+        Execute.Sql(@"/* Statement #1 in '3_Post\TAG1\TAG2\sample3.sql' */
         	INSERT INTO Production.UnitMeasure
         	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-        Execute.Sql(@"/* 3_Post\TAG1\TAG2\sample3.sql */
+        Execute.Sql(@"/* Statement #2 in '3_Post\TAG1\TAG2\sample3.sql' */
         	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
         	VALUES (N'Square Yards', N'Y2', GETDATE());");
     }
     
-    Execute.Sql(@"/* 3_Post\TAG1\sample1.sql */
+    Execute.Sql(@"/* Statement #1 in '3_Post\TAG1\sample1.sql' */
     	INSERT INTO Production.UnitMeasure
     	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-    Execute.Sql(@"/* 3_Post\TAG1\sample1.sql */
+    Execute.Sql(@"/* Statement #2 in '3_Post\TAG1\sample1.sql' */
     	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
     	VALUES (N'Square Yards', N'Y2', GETDATE());");
     
     if (this.GetDbTag() == "TAG2")
     {
-        Execute.Sql(@"/* 3_Post\TAG1\sample2.TAG2.sql */
+        Execute.Sql(@"/* Statement #1 in '3_Post\TAG1\sample2.TAG2.sql' */
         	INSERT INTO Production.UnitMeasure 
         	VALUES (N'FT2', N'Square Feet ', '20080923');");
     }
     
     if (this.GetDbTag() == "TAG2" || this.GetDbTag() == "TAG3")
     {
-        Execute.Sql(@"/* 3_Post\TAG1\sample3.TAG2.TAG3.sql */
+        Execute.Sql(@"/* Statement #1 in '3_Post\TAG1\sample3.TAG2.TAG3.sql' */
         	INSERT INTO Production.UnitMeasure 
         	VALUES (N'FT2', N'Square Feet ', '20080923');");
     }
@@ -38,17 +38,17 @@ if (this.GetDbTag() == "TAG1")
 if (this.GetDbTag() == "TAG1" || this.GetDbTag() == "TAG2")
 {
     
-    Execute.Sql(@"/* 3_Post\TAG1.TAG2\sample3.sql */
+    Execute.Sql(@"/* Statement #1 in '3_Post\TAG1.TAG2\sample3.sql' */
     	INSERT INTO Production.UnitMeasure
     	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-    Execute.Sql(@"/* 3_Post\TAG1.TAG2\sample3.sql */
+    Execute.Sql(@"/* Statement #2 in '3_Post\TAG1.TAG2\sample3.sql' */
     	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
     	VALUES (N'Square Yards', N'Y2', GETDATE());");
 }
 
-Execute.Sql(@"/* 3_Post\sample9.sql */
+Execute.Sql(@"/* Statement #1 in '3_Post\sample9.sql' */
 	INSERT INTO Production.UnitMeasure
 	VALUES (N'FT2', N'Square Feet ', '20080923'), (N'Y', N'Yards', '20080923'), (N'Y3', N'Cubic Yards', '20080923');");
-Execute.Sql(@"/* 3_Post\sample9.sql */
+Execute.Sql(@"/* Statement #2 in '3_Post\sample9.sql' */
 	INSERT INTO Production.UnitMeasure (Name, UnitMeasureCode, ModifiedDate)
 	VALUES (N'Square Yards', N'Y2', GETDATE());");
