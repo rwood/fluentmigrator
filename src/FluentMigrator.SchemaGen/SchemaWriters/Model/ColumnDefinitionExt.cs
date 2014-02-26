@@ -18,6 +18,7 @@
 
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using FluentMigrator.Model;
 using FluentMigrator.SchemaGen.Extensions;
@@ -274,6 +275,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
                     sysType = string.Format("AsCustom({0})", CustomType);
                     break;
                 default:
+                    Debug.Assert(false);
                     break;
             }
 
@@ -284,9 +286,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
         {
             if (size == -1) return "int.MaxValue";
 
-            if (type == DbType.Binary && size == DbTypeSizes.ImageCapacity) return "DbTypeSizes.ImageCapacity";              // IMAGE fields
-            if (type == DbType.AnsiString && size == DbTypeSizes.AnsiTextCapacity) return "DbTypeSizes.AnsiTextCapacity";    // TEXT fields
-            if (type == DbType.String && size == DbTypeSizes.UnicodeTextCapacity) return "DbTypeSizes.UnicodeTextCapacity";  // NTEXT fields
+            if (type == DbType.Binary && size == DbTypeSizes.ImageCapacity) return "int.MaxValue";        // Maps IMAGE fields to VARBINARY(MAX)
+            if (type == DbType.AnsiString && size == DbTypeSizes.AnsiTextCapacity) return "int.MaxValue"; // Map TEXT fields to VARCHAR(MAX)
+            if (type == DbType.String && size == DbTypeSizes.UnicodeTextCapacity) return "int.MaxValue";  // NTEXT fields to NVARCHAR(MAX)
 
             return size.ToString();
         }
