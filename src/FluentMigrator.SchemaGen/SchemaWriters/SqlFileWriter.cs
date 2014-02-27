@@ -44,6 +44,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         private readonly IOptions options;
         private readonly IAnnouncer announcer;
 
+        // Tags found file and folder names that are excluded from generated if() conditions.
+        // We exclude numbers used for folder ordering and D0 - D9 folder names used for dependency ordering.
+        private static readonly Regex excludedTags = new Regex(@"^[0-9]+$|^D[0-9]+$");
+
         // Property of MigrateExt class used to identify the current database script tag at run-time.
         private const string CallGetDbTag = "this.GetDbTag()";
 
@@ -162,7 +166,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             foreach (var subDir in dir.GetDirectories().OrderBy(x => x.Name))
             {
                 DirectoryInfo subDir1 = subDir;
-                IEnumerable<string> tags = subDir.Name.Split('.');
+                // Extract tags from folder
+                IEnumerable<string> tags = subDir.Name.Split('.').Where(tag => !excludedTags.IsMatch(tag)); 
                 lines.WriteLines(GetIfStatementWithTags(tags, () => EmbedTaggedSqlDirectory(subDir1)));   // recursion
             }
 
