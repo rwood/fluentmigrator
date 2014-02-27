@@ -46,6 +46,8 @@ namespace FluentMigrator.Expressions
 
         private static readonly Regex goSplitter = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
 
+        private static readonly Regex digitsOnly = new Regex(@"^\d$");
+
         private IEnumerable<FileInfo> GetSqlFiles()
         {
             var sqlDir = new DirectoryInfo(SqlScriptDirectory);
@@ -68,7 +70,7 @@ namespace FluentMigrator.Expressions
                 // A relative path is used to ensure tags in the sqlDir path are ignored.
                 return from file in sqlDir.GetFiles(sqlFilePattern, SearchOption)
                        let relPath = file.FullName.Substring(sqlDir.FullName.Length).ToUpper()
-                       let parts = relPath.Replace('\\', '.').Split('.')
+                       let parts = relPath.Replace('\\', '.').Split('.').Where(part => !digitsOnly.IsMatch(part))  // Ignore ordering numbers in folders 
                        where ScriptTags.All(tag => parts.Contains(tag))
                        orderby file.FullName // Ensure predicatable execution order
                        select file;
@@ -95,6 +97,9 @@ namespace FluentMigrator.Expressions
             {
                 string allText = File.ReadAllText(file.FullName);
                 int nStatement = 0;
+
+                IList<string> failures = new List<string>();
+                string faildSqlLog = file.FullName.Replace(".sql", ".log.FAILED");
                 foreach (string sqlStatement in GetStatements(allText).Where(t => t.Trim() != string.Empty))
                 {
                     nStatement++;
@@ -108,8 +113,30 @@ namespace FluentMigrator.Expressions
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception(string.Format("{0}: Failed to execute statement #{1} in SQL script", file.FullName, nStatement), ex);
+                        string msg = string.Format("{0}: Failed to execute statement #{1} in SQL script", file.FullName, nStatement);
+                        if (processor.Options.PerScriptLog)
+                        {
+                            failures.Add(msg);
+                            for (var e = ex; e != null; e = e.InnerException)
+                            {
+                                failures.Add(e.Message);
+                            }
+                            failures.Add("===============");
+                        }
+                        else
+                        {
+                            throw new Exception(msg, ex);
+                        }
                     }
+                }
+
+                if (failures.Any() && processor.Options.PerScriptLog)
+                {
+                    File.WriteAllLines(faildSqlLog, failures.ToArray());
+                }
+                else if (File.Exists(faildSqlLog))
+                {
+                    File.Delete(faildSqlLog);
                 }
             }
         }

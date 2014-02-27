@@ -5,5 +5,6 @@
         bool PreviewOnly { get; }
         int Timeout { get; }
         string ProviderSwitches { get; }
+        bool PerScriptLog { get; }
     }
 }

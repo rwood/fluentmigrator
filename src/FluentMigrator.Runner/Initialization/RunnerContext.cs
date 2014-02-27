@@ -27,6 +27,7 @@ namespace FluentMigrator.Runner.Initialization
         public IEnumerable<string> Features { get; set; }
         public bool TransactionPerSession { get; set; }
         public string ProviderSwitches { get; set; }
+        public bool PerScriptLog { get; set; }
 
         public IAnnouncer Announcer
         {

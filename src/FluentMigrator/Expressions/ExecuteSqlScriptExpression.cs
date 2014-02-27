@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FluentMigrator.Infrastructure;
 
 namespace FluentMigrator.Expressions
@@ -29,18 +30,41 @@ namespace FluentMigrator.Expressions
 
         public override void ExecuteWith(IMigrationProcessor processor)
         {
+            string sqlStatement = null;
+            string faildSqlLog = SqlScript.Replace(".sql", ".log.FAILED");
             try
             {
-                string sqlText = File.ReadAllText(SqlScript);
+                sqlStatement = File.ReadAllText(SqlScript);
 
                 // since all the Processors are using String.Format() in their Execute method
                 //  we need to escape the brackets with double brackets or else it throws an incorrect format error on the String.Format call
-                sqlText = sqlText.Replace("{", "{{").Replace("}", "}}");
-                processor.Execute(sqlText);
+                sqlStatement = sqlStatement.Replace("{", "{{").Replace("}", "}}");
+                processor.Execute(sqlStatement);
+
+                if (processor.Options.PerScriptLog && File.Exists(faildSqlLog))
+                {
+                    File.Delete(faildSqlLog);
+                }
             }
             catch (Exception ex)
             {
-                throw new Exception(string.Format("{0}: Failed to execute SQL script", SqlScript), ex);
+                string msg = string.Format("{0}: Failed to execute SQL script", SqlScript);
+
+                if (processor.Options.PerScriptLog && sqlStatement != null)
+                {
+                    IList<string> failures = new List<string>();
+                    failures.Add(msg);
+                    for (var e = ex; e != null; e = e.InnerException)
+                    {
+                        failures.Add(e.Message);
+                    }
+
+                    File.WriteAllLines(faildSqlLog, failures.ToArray());
+                }
+                else
+                {
+                    throw new Exception(msg, ex);
+                }
             }
         }
 

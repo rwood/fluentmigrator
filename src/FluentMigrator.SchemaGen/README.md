@@ -215,6 +215,8 @@ Known Issues
    * The Execute.ScriptDirectory() command includes the opton to not execute subfolders so we can just create subfolders for those scripts that require their own transaction.
    * A future version of SchemaGen can implement this by optionally generating a class per script folder in it's own Migration class.
    * We could perhaps introduce a "NEWTX" tag that runs a single script or folder in it's own Migration class.
+ * When dropping tables there is code (currently commented out) to also drop related FKs. 
+   * In test runs I found that FKs were already deleted. Not yet sure why. Needs investigation.
 
 To Do
 -----
