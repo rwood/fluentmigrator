@@ -14,12 +14,12 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
     /// </summary>
     class EmptyDbSchemaReader : IDbSchemaReader
     {
-        public IDictionary<string, int> TablesInForeignKeyOrder(bool @ascending)
+        public IDictionary<string, int> TablesInForeignKeyOrder()
         {
             return new Dictionary<string, int>();
         }
 
-        public IDictionary<string, int> ScriptsInDependencyOrder(bool @ascending)
+        public IDictionary<string, int> ScriptsInDependencyOrder()
         {
             return new Dictionary<string, int>();
         }

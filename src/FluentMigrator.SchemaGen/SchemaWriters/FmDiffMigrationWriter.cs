@@ -294,17 +294,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             
             // TODO: Currently ignoring Schema name for table objects.
 
-            var db1FkOrder = db1.TablesInForeignKeyOrder(false); // descending order
+            var db1FkOrder = db1.TablesInForeignKeyOrder();
 
             var removedTableNames = db1.Tables.Keys.Except(db2.Tables.Keys).ToList();
-            removedTableNames = removedTableNames.OrderBy(t => -db1FkOrder[t]).ToList();
+            // -db1FkOrder[] = reverse dependency order
+            removedTableNames = removedTableNames.OrderBy(t => -db1FkOrder[t]).ToList();  
 
             foreach (TableDefinitionExt table in removedTableNames.Select(name => db1.Tables[name]))
             {
-                foreach (ForeignKeyDefinitionExt fk in table.ForeignKeys)
-                {
-                    lines.WriteLine(fk.GetDeleteForeignKeyCode());
-                }
+                // BUG: This generated code is failing to execute due to FK not being there!
+                //foreach (ForeignKeyDefinitionExt fk in table.ForeignKeys)
+                //{
+                //    lines.WriteLine(fk.GetDeleteForeignKeyCode());
+                //}
 
                 lines.WriteLine(table.GetDeleteCode());
             }
@@ -362,7 +364,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // TODO: Currently ignoring Schema name for table objects.
 
-            var db2FkOrder = db2.TablesInForeignKeyOrder(true);
+            var db2FkOrder = db2.TablesInForeignKeyOrder();
             var db2TablesInFkOrder = db2.Tables.Values.OrderBy(tableDef => db2FkOrder[tableDef.Name]);
 
             foreach (TableDefinitionExt table in db2TablesInFkOrder)

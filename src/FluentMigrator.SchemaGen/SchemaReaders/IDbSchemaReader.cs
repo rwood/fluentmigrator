@@ -16,8 +16,8 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
 
     public interface IDbSchemaReader
     {
-        IDictionary<string, int> TablesInForeignKeyOrder(bool ascending);
-        IDictionary<string, int> ScriptsInDependencyOrder(bool ascending);
+        IDictionary<string, int> TablesInForeignKeyOrder();
+        IDictionary<string, int> ScriptsInDependencyOrder();
 
         IDictionary<string, TableDefinitionExt> Tables { get; }
 

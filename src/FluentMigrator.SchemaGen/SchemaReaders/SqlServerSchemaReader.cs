@@ -332,7 +332,7 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
         /// Ordering used to create or drop tables and foreign keys.
         /// </summary>
         /// <returns></returns>
-        public IDictionary<string, int> TablesInForeignKeyOrder(bool ascending)
+        public IDictionary<string, int> TablesInForeignKeyOrder()
         {
             // Computes a dependency depth (Ordinal).
             // Level 0 = Depends on NO table FKs.
@@ -377,11 +377,11 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
                         ) AS tt
                         ON t.TableID = tt.TableID
                         AND t.Ordinal = tt.Ordinal
-                ORDER BY t.Ordinal {0}, t.TableName {0}";
+                ORDER BY t.Ordinal, t.TableName";
 
             #endregion
 
-            using (DataSet ds = Read(query, ascending ? "ASC" : "DESC"))
+            using (DataSet ds = Read(query))
             using (DataTable dt = ds.Tables[0])
             {
                 return (from row in dt.Rows.Cast<DataRow>()
@@ -404,7 +404,7 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
         /// Object's schema name is not (yet) included in the dictionary key.
         /// Uses sys.sql_expression_dependencies view that requires SQL Server 2008
         /// </remarks>
-        public IDictionary<string, int> ScriptsInDependencyOrder(bool ascending)
+        public IDictionary<string, int> ScriptsInDependencyOrder()
         {
             const string query = @"WITH TablesCTE(ObjType, SchemaName, ObjectName, ObjectID, Ordinal) AS
                 (
@@ -433,9 +433,9 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
                             GROUP BY itt.ObjType, itt.SchemaName, itt.ObjectName, itt.ObjectID
                         ) AS tt
                         ON t.ObjectID = tt.ObjectID AND t.Ordinal = tt.Ordinal
-                ORDER BY tt.Ordinal {0}, t.ObjType, t.SchemaName {0}, t.ObjectName {0}, t.ObjectID";
+                ORDER BY tt.Ordinal, t.ObjType, t.SchemaName, t.ObjectName, t.ObjectID";
 
-            using (DataSet ds = Read(query, ascending ? "ASC" : "DESC"))
+            using (DataSet ds = Read(query))
             using (DataTable dt = ds.Tables[0])
             {
                 return (from row in dt.Rows.Cast<DataRow>()
