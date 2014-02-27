@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Debug.txt" />
+    <Content Include="Gen_Move_SP_OR_VIEWS.sql" />
     <Content Include="LICENSE.txt" />
     <None Include="README.md" />
   </ItemGroup>

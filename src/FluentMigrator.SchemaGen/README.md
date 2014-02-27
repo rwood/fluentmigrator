@@ -37,7 +37,7 @@ Main Features:
 	* Rebuilds index when index columns change type
     * Supports Clustered/Nonclustered Indexes
 	* Supports Index Fill Factor (Added WithOptions.Fill() method to FM API)
-  * Specify output directory, class namespace, Fluent Migrator [Tag] attrtibutes.
+  * Specify output directory, class namespace and newly added Fluent Migrator [Feature] attributes (replace [Tag]). 
     * Additional support classes are added in a generated project DLL.
     * Uses a MigrationVersion() class that defines the product version.
   * Source databases defined either using full connection string or just a localhost database name.
@@ -81,13 +81,15 @@ Excutes custom SQL Scripts for Table migration, Views, Stored Procedures, Functi
   * Adds migrations that run SQL scripts to perform Pre, Post or Per table data migrations.
   * Optionally loads SQL at run-time (best for development) OR embeds SQL scripts in C# code (best for deployment). 
 
-SQL Script Tagging
-------------------
+SQL file Script feature tagging
+-------------------------------
 
   * A simple tag based naming convention selects scripts to execute for each database type, database instance or component feature.
   * Allows reuse of SQL scripts that work in multiple database types or that need to be run in multiple database instances.
   * Flexible file/folder struture that allows related scripts to be either grouped together (same directory) or split into directory hierarchy.
   * Execution is ordered by full path name so dependency ordering can be controlled by file or folder naming.
+
+
 
 Example SQL Script Folder Structure
 -----------------------------------
@@ -111,6 +113,48 @@ Example SQL Script Folder Structure
    * ```<dir>/D0/*.sql``` = Objects that have NO dependencies
    * ```<dir>/D1/*.sql``` = Objects that depend on ```D0/*.sql``` 
    * ```<dir>/D2/*.sql``` = Objects that depend on ```D1/*.sql```  etc.
+
+Once you have extracted SQL code for all of your stored procedures and viewss into folders, you can run this SQL Server code to generate a shell script to move them into the correct folder so that they run in dependency order:
+
+```
+
+	/* 
+	 * Generates code to MOVE stored procs into subdirectories corresponding to their dependency order
+	 * Replace 'P'  with 'V' to select views, or 'IF' to select functions.
+	 * Just copy/paste the 1st column into a batch script file.
+	 */
+
+	WITH TablesCTE(ObjType, SchemaName, ObjectName, ObjectID, Ordinal) AS
+	(
+		SELECT  so.type AS ObjType, OBJECT_SCHEMA_NAME(so.object_id) AS SchemaName, OBJECT_NAME(so.object_id) AS ObjectName, so.object_id AS ObjectID, 
+		0 AS Ordinal
+		FROM sys.objects AS so
+		WHERE so.type IN ( 'P'  ) AND  so.is_ms_Shipped = 0
+
+		UNION ALL
+
+		SELECT so.type AS ObjType, OBJECT_SCHEMA_NAME(so.object_id) AS SchemaName, OBJECT_NAME(so.object_id) AS ObjectName, so.object_id AS ObjectID,
+		tt.Ordinal + 1 AS Ordinal
+		FROM sys.objects AS so
+		INNER JOIN sys.sql_expression_dependencies AS dep ON dep.referencing_id = so.object_id 
+		INNER JOIN TablesCTE AS tt ON dep.referenced_id = tt.ObjectID
+		WHERE so.type IN ( 'P' ) AND so.is_ms_Shipped = 0
+	)
+
+	SELECT DISTINCT 'move ' + t.ObjectName + '.sql D' + CAST(tt.Ordinal as VARCHAR), tt.Ordinal, t.ObjType, t.SchemaName, t.ObjectName, t.ObjectID
+		FROM TablesCTE AS t
+		INNER JOIN
+		(
+			SELECT itt.ObjType, itt.SchemaName AS SchemaName, itt.ObjectName, itt.ObjectID, 
+			   Max(itt.Ordinal) AS Ordinal
+			FROM TablesCTE AS itt
+			GROUP BY itt.ObjType, itt.SchemaName, itt.ObjectName, itt.ObjectID
+		) AS tt
+		ON t.ObjectID = tt.ObjectID AND t.Ordinal = tt.Ordinal
+	ORDER BY tt.Ordinal, t.ObjType, t.SchemaName, t.ObjectName, t.ObjectID
+
+
+```  
 
 Generated C# Classes
 ====================
@@ -154,13 +198,14 @@ Command Line Options
 
  ```FluentMigrator.SchemaGen.EXE <options>```
 
-See the [Options.cs](Options.cs) for command line options and help documentation.
+See the [SchemaGenOptions.cs](SchemaGenOptions.cs) for command line options and help documentation.
+Runing ```FluentMigrator.SchemaGen.EXE --help``` will also display the command line options.
 
 MSBuild Task
 ============
    
-  * See the [FmCodeGen.cs](MSBuild/FmCodeGen.cs) for **<FmCodeGen\>** task options.
-    * MSBuild task options are documented in matching command options: [Options.cs](Options.cs).
+  * See the [FmCodeGen.cs](MSBuild/FmCodeGen.cs) for **<FmCodeGen\>** MSBuild Task .
+    * MSBuild task options are documented in matching command options: [SchemaGenOptions.cs](SchemaGenOptions.cs) (implements same interface as FmCodeGen.cs).
   * Requires MSBuild.exe from .NET 3.5 or later:
     * ``` %WinDir%\Microsoft.NETFramework\v3.5\MSBuild.exe ``` 
 
@@ -230,6 +275,8 @@ To Do
 Future Ideas
 ------------
 
+ * Can extract code for all SPs, Views, Functions, User defined types and put them into correct dependency order directories.
+   * Generate code to deleted all removed SPs, Views, Functions and Type objects.
  * Support selective differences so you can slice the changes into different phases.
    * Currently only support table include/exclude selection.
    * Object renaming only (Can then separate out Index/FK renaming changes from the 'real' schema changes).
