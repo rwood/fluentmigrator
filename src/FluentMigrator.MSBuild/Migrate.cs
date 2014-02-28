@@ -162,12 +162,17 @@ namespace FluentMigrator.MSBuild
             }
             catch (ProcessorFactoryNotFoundException ex)
             {
-                Log.LogError("While executing migrations the following error was encountered: {0}", ex.Message);
+                Log.LogError("While executing migrations the following error was encountered:");
+                for (Exception e = ex; e != null; e = e.InnerException ) Log.LogError(e.Message);
+
                 return false;
             }
             catch (Exception ex)
             {
-                Log.LogError("While executing migrations the following error was encountered: {0}, {1}", ex.Message, ex.StackTrace);
+                Log.LogError("While executing migrations the following error was encountered:");
+                for (Exception e = ex; e != null; e = e.InnerException) Log.LogError(e.Message);
+                Log.LogError(ex.StackTrace);
+
                 return false;
             }
             finally
