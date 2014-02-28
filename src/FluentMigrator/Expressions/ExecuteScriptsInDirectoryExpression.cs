@@ -52,7 +52,7 @@ namespace FluentMigrator.Expressions
         {
             var sqlDir = new DirectoryInfo(SqlScriptDirectory);
 
-            if (!sqlDir.Exists) throw new DirectoryNotFoundException(sqlDir.FullName);
+            if (!sqlDir.Exists) throw new DirectoryNotFoundException(sqlDir.FullName + ": Directory not found");
 
             string sqlFilePattern = (ScriptPrefix ?? "") + "*.sql";
 
@@ -154,7 +154,7 @@ namespace FluentMigrator.Expressions
 
         public override string ToString()
         {
-            return string.Format("{0}{1}/{2}{3}{4}",
+            return string.Format("{0}{1}\\{2}{3}{4}",
                                  base.ToString(), 
                                  SqlScriptDirectory, 
                                  SearchOption == SearchOption.AllDirectories ? "**" : "*",
