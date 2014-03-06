@@ -5,6 +5,6 @@
         public bool PreviewOnly { get; set; }
         public int Timeout { get; set; }
         public string ProviderSwitches { get; set; }
-        public bool PerScriptLog { get; set; }
+        public ScriptFailureAction ScriptFailureAction { get; set; }
     }
 }

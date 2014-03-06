@@ -340,7 +340,7 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             // Level 2 = Depends on Level 0 or 1 tables
             // Level N = Depends on Level 0 .. N-1 tables.
 
-            #region query = Magic Query
+            #region query = FK Order Query
             // http://stackoverflow.com/questions/352176/sqlserver-how-to-sort-table-names-ordered-by-their-foreign-key-dependency
             const string query = @"WITH TablesCTE(SchemaName, TableName, TableID, Ordinal) AS
                 (

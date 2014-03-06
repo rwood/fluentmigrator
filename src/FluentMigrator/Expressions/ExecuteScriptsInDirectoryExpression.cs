@@ -97,9 +97,11 @@ namespace FluentMigrator.Expressions
             {
                 string allText = File.ReadAllText(file.FullName);
                 int nStatement = 0;
+                bool abort = false;
 
                 IList<string> failures = new List<string>();
                 string faildSqlLog = file.FullName.Replace(".sql", ".log.FAILED");
+
                 foreach (string sqlStatement in GetStatements(allText).Where(t => t.Trim() != string.Empty))
                 {
                     nStatement++;
@@ -114,23 +116,29 @@ namespace FluentMigrator.Expressions
                     catch (Exception ex)
                     {
                         string msg = string.Format("{0}: Failed to execute statement #{1} in SQL script", file.FullName, nStatement);
-                        if (processor.Options.PerScriptLog)
-                        {
-                            failures.Add(msg);
-                            for (var e = ex; e != null; e = e.InnerException)
-                            {
-                                failures.Add(e.Message);
-                            }
-                            failures.Add("===============");
-                        }
-                        else
+                        if (processor.Options.ScriptFailureAction == ScriptFailureAction.FailMigration)
                         {
                             throw new Exception(msg, ex);
+                        }
+                        
+                        failures.Add(msg);
+                        for (var e = ex; e != null; e = e.InnerException)
+                        {
+                            failures.Add(e.Message);
+                        }
+                        failures.Add("===============");
+
+                        if (processor.Options.ScriptFailureAction ==
+                            ScriptFailureAction.LogFailureAndStopExecutingScripts)
+                        {
+                            // Stop processing any more scripts so we can diagnose the fault with database in this state.
+                            abort = true;
+                            break;
                         }
                     }
                 }
 
-                if (failures.Any() && processor.Options.PerScriptLog)
+                if (failures.Any())
                 {
                     File.WriteAllLines(faildSqlLog, failures.ToArray());
                 }
@@ -138,6 +146,9 @@ namespace FluentMigrator.Expressions
                 {
                     File.Delete(faildSqlLog);
                 }
+
+                if (abort) 
+                    break;
             }
         }
 

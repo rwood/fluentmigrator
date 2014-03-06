@@ -129,7 +129,8 @@ namespace FluentMigrator.Runner.Initialization
                 PreviewOnly = RunnerContext.PreviewOnly,
                 Timeout = RunnerContext.Timeout,
                 ProviderSwitches = RunnerContext.ProviderSwitches,
-                PerScriptLog = RunnerContext.PerScriptLog
+
+                ScriptFailureAction = RunnerContext.ScriptFailureAction
             });
 
             return processor;

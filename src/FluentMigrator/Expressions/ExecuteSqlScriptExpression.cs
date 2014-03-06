@@ -32,16 +32,18 @@ namespace FluentMigrator.Expressions
         {
             string sqlStatement = null;
             string faildSqlLog = SqlScript.Replace(".sql", ".log.FAILED");
+
+            sqlStatement = File.ReadAllText(SqlScript);
+
             try
             {
-                sqlStatement = File.ReadAllText(SqlScript);
 
                 // since all the Processors are using String.Format() in their Execute method
                 //  we need to escape the brackets with double brackets or else it throws an incorrect format error on the String.Format call
                 sqlStatement = sqlStatement.Replace("{", "{{").Replace("}", "}}");
                 processor.Execute(sqlStatement);
 
-                if (processor.Options.PerScriptLog && File.Exists(faildSqlLog))
+                if (File.Exists(faildSqlLog))       // Script worked so we remove failure file if it exists.
                 {
                     File.Delete(faildSqlLog);
                 }
@@ -50,21 +52,19 @@ namespace FluentMigrator.Expressions
             {
                 string msg = string.Format("{0}: Failed to execute SQL script", SqlScript);
 
-                if (processor.Options.PerScriptLog && sqlStatement != null)
-                {
-                    IList<string> failures = new List<string>();
-                    failures.Add(msg);
-                    for (var e = ex; e != null; e = e.InnerException)
-                    {
-                        failures.Add(e.Message);
-                    }
-
-                    File.WriteAllLines(faildSqlLog, failures.ToArray());
-                }
-                else
+                if (processor.Options.ScriptFailureAction == ScriptFailureAction.FailMigration)
                 {
                     throw new Exception(msg, ex);
                 }
+
+                IList<string> failures = new List<string>();
+                failures.Add(msg);
+                for (var e = ex; e != null; e = e.InnerException)
+                {
+                    failures.Add(e.Message);
+                }
+
+                File.WriteAllLines(faildSqlLog, failures.ToArray());
             }
         }
 

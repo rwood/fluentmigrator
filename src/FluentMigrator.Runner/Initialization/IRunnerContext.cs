@@ -40,7 +40,7 @@ namespace FluentMigrator.Runner.Initialization
         IEnumerable<string> Tags { get; set; }
         IEnumerable<string> Features { get; set; }
         string ProviderSwitches { get; set; }
-        bool PerScriptLog { get; set; }
+        ScriptFailureAction ScriptFailureAction { get; set; }
 
         bool TransactionPerSession { get; set; }
 
