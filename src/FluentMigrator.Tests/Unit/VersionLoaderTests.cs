@@ -23,10 +23,12 @@ namespace FluentMigrator.Tests.Unit
 
         public string ProviderSwitches
         {
-            get
-            {
-                return string.Empty;
-            }
+            get { return string.Empty; }
+        }
+
+        public ScriptFailureAction ScriptFailureAction
+        {
+            get { return ScriptFailureAction.FailMigration; }
         }
     }
 
