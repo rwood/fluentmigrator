@@ -40,7 +40,8 @@ namespace FluentMigrator.Runner.Generators.Jet
             SetTypeMap(DbType.StringFixedLength, "CHAR($size)", UnicodeStringCapacity);
             SetTypeMap(DbType.String, "VARCHAR(255)");
             SetTypeMap(DbType.String, "VARCHAR($size)", UnicodeStringCapacity);
-            SetTypeMap(DbType.String, "TEXT", UnicodeTextCapacity);
+            //SetTypeMap(DbType.String, "TEXT", UnicodeTextCapacity);
+            SetTypeMap(DbType.String, "TEXT", int.MaxValue);
             SetTypeMap(DbType.Time, "DATETIME");
         }
     }
