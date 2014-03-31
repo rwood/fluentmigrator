@@ -58,6 +58,7 @@ namespace FluentMigrator.SchemaGen.MSBuild
         public bool PostScripts { get; set; }
         public bool PerTableScripts { get; private set; }
 
+        public bool DefaultNaming { get; set; }
         public bool UseDeprecatedTypes { get; set; }
         public bool ShowChanges { get; set; }
         public bool DropScripts { get; set; }

@@ -18,7 +18,7 @@
 
 using System;
 
-namespace FluentMigrator.Runner
+namespace FluentMigrator
 {
     public interface IAnnouncer : IDisposable
     {

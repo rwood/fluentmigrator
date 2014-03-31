@@ -93,13 +93,9 @@
     <None Include="App.config" />
     <None Include="CHANGELOG.md" />
     <None Include="packages.config" />
-    <None Include="codegen_tests.msbuild">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="SQL-EmbedOrLink.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Debug.txt" />
     <Content Include="Gen_Move_SP_OR_VIEWS.sql" />
     <Content Include="LICENSE.txt" />
     <None Include="README.md" />

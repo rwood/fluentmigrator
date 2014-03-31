@@ -25,6 +25,7 @@ namespace FluentMigrator
 {
     public interface IMigrationProcessor : IQuerySchema, IDisposable
     {
+        IAnnouncer Announcer { get; }
         IMigrationProcessorOptions Options { get; }
         string ConnectionString { get; }
 

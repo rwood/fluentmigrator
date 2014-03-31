@@ -198,6 +198,7 @@
     <Compile Include="Expressions\DeleteTypeExpression.cs" />
     <Compile Include="Expressions\DeleteViewExpression.cs" />
     <Compile Include="Expressions\ExecuteScriptsInDirectoryExpression.cs" />
+    <Compile Include="IAnnouncer.cs" />
     <Compile Include="Infrastructure\Extensions\ExtensionsForIMigrationInfo.cs" />
     <Compile Include="Infrastructure\IMigrationInfo.cs" />
     <Compile Include="Infrastructure\MigrationInfo.cs" />

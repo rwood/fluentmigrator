@@ -91,18 +91,95 @@ namespace FluentMigrator.Expressions
             }
         }
 
+        private enum ParserState
+        {
+            InCode,                 // not in comment or code
+            StartComment,           // observed 1st '/'
+            InSingleLineComment,    // observed "//..." waiting for newline
+            InMultiLineComment,     // observed "/*..." waiting for "*"
+            EndMultiLineComment,    // observed "/*...*" waiting for "/"
+            InQuote                 // observed ' ... waiting for matching '
+        }
+
+        private IEnumerable<char> RemoveSqlComments(IEnumerable<char> sql)
+        {
+            // Due to the nested nature of comments and quotes, 
+            // using a Finite State Machine is safer and clearer IMHO than RegEx.
+            var state = ParserState.InCode;
+            bool yieldChar = true;
+            foreach (char ch in sql)
+            {
+                switch (state)
+                {
+                    case ParserState.InCode:
+                        if (ch == '/') state = ParserState.StartComment;    // possible start of a // or /* comment
+                        else if (ch == '\'') state = ParserState.InQuote;
+                        break;
+
+                    case ParserState.InQuote:
+                        if (ch == '\'') state = ParserState.InCode; // found closing quote
+                        break;
+
+                    case ParserState.StartComment:
+                        if (ch == '/') state = ParserState.InSingleLineComment;
+                        else if (ch == '*') state = ParserState.InMultiLineComment;
+                        else
+                        {
+                            state = ParserState.InCode;
+                            yield return '/';   // prior '/' was not part of a comment
+                        }
+                        break;
+
+                    case ParserState.InSingleLineComment:
+                        if (ch == '\r' || ch == '\n') state = ParserState.InCode;
+                        break;
+
+                    case ParserState.InMultiLineComment:
+                        if (ch == '*') state = ParserState.EndMultiLineComment;
+                        break;
+
+                    case ParserState.EndMultiLineComment:
+                        if (ch == '/')
+                        {
+                            state = ParserState.InCode;
+                            yieldChar = false;  // suppress this ch '/'
+                        }
+                        else
+                        {
+                            state = ParserState.InMultiLineComment;
+                        }
+                        break;
+                }
+
+                if ((state == ParserState.InCode || state == ParserState.InQuote) && yieldChar)
+                    yield return ch;
+                yieldChar = true;
+            }
+        }
+
+        private string RemoveSqlComments(string sql)
+        {
+            return new String(RemoveSqlComments(sql.ToCharArray()).ToArray());
+        }
+
         public override void ExecuteWith(IMigrationProcessor processor)
         {
             foreach (var file in GetSqlFiles())
             {
-                string allText = File.ReadAllText(file.FullName);
+                processor.Announcer.Say(file.FullName);
+
+                string allSqlText = File.ReadAllText(file.FullName);
+
+                // Remove comments to keep 'Jet' Provider happy.
+                allSqlText = RemoveSqlComments(allSqlText);
+
                 int nStatement = 0;
                 bool abort = false;
 
                 IList<string> failures = new List<string>();
                 string faildSqlLog = file.FullName.Replace(".sql", ".log.FAILED");
 
-                foreach (string sqlStatement in GetStatements(allText).Where(t => t.Trim() != string.Empty))
+                foreach (string sqlStatement in GetStatements(allSqlText).Where(t => t.Trim() != string.Empty))
                 {
                     nStatement++;
                     // since all the Processors are using String.Format() in their Execute method  we need to escape the brackets 

@@ -26,7 +26,7 @@ namespace FluentMigrator.Runner.Processors
     public abstract class ProcessorBase : IMigrationProcessor
     {
         protected readonly IMigrationGenerator Generator;
-        protected readonly IAnnouncer Announcer;
+        public IAnnouncer Announcer { get; private set; }
         public IMigrationProcessorOptions Options { get; private set; }
 
         public abstract string ConnectionString { get; }
