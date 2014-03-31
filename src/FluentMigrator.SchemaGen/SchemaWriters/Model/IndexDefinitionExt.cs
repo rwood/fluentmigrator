@@ -51,9 +51,11 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 
         public string GetCreateIndexCode()
         {
+            string nameArg = SchemaGenOptions.Instance.DefaultNaming ? "" : string.Format("\"{0}\"", Name);
+
             //Example: Create.Index("ix_Name").OnTable("TestTable2").OnColumn("Name").Ascending().WithOptions().NonClustered();
-            return string.Format("{0}Create.Index(\"{1}\").OnTable(\"{2}\").InSchema(\"{3}\"){4}",
-                GetIfDatabase(), Name, TableName, SchemaName, GetCreateIndexDefCode());
+            return string.Format("{0}Create.Index({1}).OnTable(\"{2}\").InSchema(\"{3}\"){4}",
+                GetIfDatabase(), nameArg, TableName, SchemaName, GetCreateIndexDefCode());
         }
 
         private string GetIfDatabase()

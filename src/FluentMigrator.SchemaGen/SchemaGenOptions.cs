@@ -56,6 +56,7 @@ namespace FluentMigrator.SchemaGen
         bool PostScripts { get; }
         bool PerTableScripts { get; }
 
+        bool DefaultNaming { get; }
         bool UseDeprecatedTypes { get; }
         bool ShowChanges { get; }
         bool DropScripts { get; }
@@ -112,6 +113,9 @@ namespace FluentMigrator.SchemaGen
 
         [Option("features", DefaultValue = "", HelpText = "Example: --features ABC,DEF|GHI Adds [Features(\"ABC\", \"DEF\")] and [Features(\"GHI\")] attributes to all generated C# classes.")]
         public string Features { get; set; }
+
+        [Option("default-names", DefaultValue = false, HelpText = "When creating new indexes and foreign keys, allow FluentMigrator to generate their names.")]
+        public bool DefaultNaming { get; set; }
 
         [Option("use-deprecated-types", DefaultValue = false, HelpText = "Use deprecated types TEXT, NTEXT and IMAGE normalled converted to VARCHAR(MAX), NVARCHAR(MAX) and VARBINARY(MAX).")]
         public bool UseDeprecatedTypes { get; set; }

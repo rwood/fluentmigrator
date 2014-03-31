@@ -281,6 +281,27 @@ namespace FluentMigrator.SchemaGen.SchemaReaders
             }
         }
 
+        private string MapFilterCond(string filter, string tableNameField)
+        {
+            if (filter == null) return null;
+            return filter.Split(';').Select(pat => tableNameField + " LIKE '" + pat.Trim().Replace("*", "%") + "'").StringJoin(" OR ");
+        }
+
+        private string GetTableFilterCondition(string tableNameField)
+        {
+            string condIncl = MapFilterCond(options.IncludeTables, tableNameField);
+            string condExcl = MapFilterCond(options.ExcludeTables, tableNameField);
+
+            if (condIncl != null && condExcl != null)
+            {
+                return string.Format("({0}) AND ({1})", condIncl, condExcl);
+            }
+            else
+            {
+                return condIncl ?? condExcl;
+            }
+        }
+
         public IEnumerable<DbObjectName> TableNames
         {
             get { return ApplyTableFilter(GetNameList("SELECT SCHEMA_NAME(schema_id) as schema_name, name FROM sys.tables WHERE type = 'U' ORDER BY schema_name, name")); }

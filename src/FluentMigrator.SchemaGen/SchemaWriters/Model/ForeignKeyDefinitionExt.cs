@@ -59,7 +59,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 
         public string GetCreateForeignKeyCode()
         {
-            return string.Format("Create.ForeignKey(\"{0}\")\r\n\t{1};", Name, GetForeignKeyDefCode());
+            string nameArg = SchemaGenOptions.Instance.DefaultNaming ? "" : string.Format("\"{0}\"", Name);
+            return string.Format("Create.ForeignKey({0})\r\n\t{1};", nameArg, GetForeignKeyDefCode());
         }
 
         public string GetRemoveFKCode()
