@@ -40,7 +40,7 @@ namespace FluentMigrator.Runner.Generators.Generic
         public virtual string UpdateData { get { return "UPDATE {0} SET {1} WHERE {2}"; } }
         public virtual string DeleteData { get { return "DELETE FROM {0} WHERE {1}"; } }
 
-        public virtual string CreateConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} {2} ({3})"; } }
+        public virtual string CreateConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} {2}({3})"; } }
         public virtual string DeleteConstraint { get { return "ALTER TABLE {0} DROP CONSTRAINT {1}"; } }
         public virtual string CreateForeignKeyConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}){5}{6}"; } }
 
@@ -74,7 +74,12 @@ namespace FluentMigrator.Runner.Generators.Generic
             return column.Index.IsUnique ? "UNIQUE " : string.Empty;
         }
 
-        public virtual string GetClusterTypeString(CreateIndexExpression column)
+        public virtual string GetClusterTypeString(CreateIndexExpression expr)
+        {
+            return string.Empty;
+        }
+
+        public virtual string GetClusterTypeString(CreateConstraintExpression expr)
         {
             return string.Empty;
         }
@@ -150,7 +155,6 @@ namespace FluentMigrator.Runner.Generators.Generic
             string[] indexColumns = new string[expression.Index.Columns.Count];
             IndexColumnDefinition columnDef;
 
-
             for (int i = 0; i < expression.Index.Columns.Count; i++)
             {
                 columnDef = expression.Index.Columns.ElementAt(i);
@@ -214,13 +218,18 @@ namespace FluentMigrator.Runner.Generators.Generic
         public override string Generate(CreateConstraintExpression expression)
         {
 
-            var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY" : "UNIQUE";
+            var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY " : "UNIQUE ";
 
             string[] columns = new string[expression.Constraint.Columns.Count];
 
             for (int i = 0; i < expression.Constraint.Columns.Count; i++)
             {
-                columns[i] = Quoter.QuoteColumnName(expression.Constraint.Columns.ElementAt(i));
+                var columnDef = expression.Constraint.Columns.ElementAt(i);
+                columns[i] = Quoter.QuoteColumnName(columnDef.Name);
+                if (columnDef.Direction == Direction.Descending)
+                {
+                    columns[i] += " DESC";
+                }
             }
 
             return string.Format(CreateConstraint, Quoter.QuoteTableName(expression.Constraint.TableName),
@@ -445,6 +454,5 @@ namespace FluentMigrator.Runner.Generators.Generic
 
             return result.ToString();
         }
-
     }
 }

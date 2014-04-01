@@ -12,12 +12,6 @@ using FluentMigrator.Model;
 
 namespace FluentMigrator.Runner.Extensions
 {
-    public enum SqlServerConstraintType
-    {
-        Clustered,
-        NonClustered
-    }
-
     public static class SqlServerExtensions
     {
         public const string IdentityInsert = "SqlServerIdentityInsert";
@@ -55,26 +49,6 @@ namespace FluentMigrator.Runner.Extensions
             castColumn.AddAdditionalFeature(IdentitySeed, seed);
             castColumn.AddAdditionalFeature(IdentityIncrement, increment);
             return expression.Identity();
-        }
-
-        private static void SetConstraintType(ICreateConstraintOptionsSyntax expression, SqlServerConstraintType type)
-        {
-            CreateConstraintExpressionBuilder castPrimaryKey = expression as CreateConstraintExpressionBuilder;
-            if (castPrimaryKey == null) throw new InvalidOperationException(type + " must be called on an object that implements ISupportAdditionalFeatures.");
-
-            ISupportAdditionalFeatures castExpression = castPrimaryKey.Expression.Constraint;
-
-            castExpression.AddAdditionalFeature(ConstraintType, type);
-        }
-
-        public static void Clustered(this ICreateConstraintOptionsSyntax expression)
-        {
-            SetConstraintType(expression, SqlServerConstraintType.Clustered);
-        }
-
-        public static void NonClustered(this ICreateConstraintOptionsSyntax expression)
-        {
-            SetConstraintType(expression, SqlServerConstraintType.NonClustered);
         }
 
         public static ICreateIndexOptionsSyntax Include(this ICreateIndexOptionsSyntax expression, string columnName)

@@ -57,8 +57,8 @@ namespace FluentMigrator.Runner.Generators.SqlServer
         public override string IdentityInsert { get { return "SET IDENTITY_INSERT {0}.{1} {2}"; } }
 
         public override string CreateForeignKeyConstraint { get { return "ALTER TABLE {0}.{1} ADD CONSTRAINT {2} FOREIGN KEY ({3}) REFERENCES {4}.{5} ({6}){7}{8}"; } }
-        public override string CreateConstraint { get { return "{0} ADD CONSTRAINT {1} {2}{3} ({4})"; } }
-        public override string DeleteConstraint { get { return "{0} DROP CONSTRAINT {1}"; } }
+        public override string CreateConstraint { get { return "ALTER TABLE {0}.{1} ADD CONSTRAINT {2} {3}{4}({5})"; } }
+        public override string DeleteConstraint { get { return "ALTER TABLE {0}.{1} DROP CONSTRAINT {2}"; } }
 
         public virtual string GetIncludeString(CreateIndexExpression column)
         {
@@ -177,7 +177,14 @@ namespace FluentMigrator.Runner.Generators.SqlServer
 
         public override string Generate(DeleteForeignKeyExpression expression)
         {
-            return string.Format("ALTER TABLE {0}.{1}", Quoter.QuoteSchemaName(expression.ForeignKey.ForeignTableSchema), base.Generate(expression));
+            if (expression.ForeignKey.ForeignTable == null)
+                throw new ArgumentNullException("Table name not specified, ensure you have appended the OnTable extension. Format should be Delete.ForeignKey(KeyName).OnTable(TableName)");
+
+            return string.Format(DeleteConstraint, 
+                Quoter.QuoteSchemaName(expression.ForeignKey.ForeignTableSchema),
+                Quoter.QuoteTableName(expression.ForeignKey.ForeignTable), 
+                Quoter.QuoteColumnName(expression.ForeignKey.Name));
+
         }
 
         public override string Generate(InsertDataExpression expression)
@@ -354,7 +361,20 @@ namespace FluentMigrator.Runner.Generators.SqlServer
 
         public override string Generate(CreateConstraintExpression expression)
         {
-            return string.Format("ALTER TABLE {0}.{1}", Quoter.QuoteSchemaName(expression.Constraint.SchemaName), base.Generate(expression));
+            var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY " : "UNIQUE ";
+
+            var constraintClustering = GetClusterTypeString(expression);
+
+            string[] cols = expression.Constraint.Columns.Select(col => Quoter.QuoteColumnName(col.Name) + (col.Direction == Direction.Descending ? " DESC" : String.Empty)).ToArray();
+            string columns = String.Join(", ", cols);
+
+            return string.Format(CreateConstraint,
+                Quoter.QuoteSchemaName(expression.Constraint.SchemaName), 
+                Quoter.QuoteTableName(expression.Constraint.TableName),
+                Quoter.QuoteConstraintName(expression.Constraint.ConstraintName),
+                constraintType,
+                constraintClustering,
+                columns);
         }
 
         public override string Generate(DeleteDefaultConstraintExpression expression)
@@ -380,7 +400,10 @@ namespace FluentMigrator.Runner.Generators.SqlServer
 
         public override string Generate(DeleteConstraintExpression expression)
         {
-            return string.Format("ALTER TABLE {0}.{1}", Quoter.QuoteSchemaName(expression.Constraint.SchemaName), base.Generate(expression));
+            return string.Format(DeleteConstraint, 
+                Quoter.QuoteSchemaName(expression.Constraint.SchemaName), 
+                Quoter.QuoteTableName(expression.Constraint.TableName), 
+                Quoter.QuoteConstraintName(expression.Constraint.ConstraintName));
         }
 
         public override string Generate(CreateSchemaExpression expression)

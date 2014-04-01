@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FluentMigrator.Expressions;
+using FluentMigrator.Model;
 using FluentMigrator.Runner.Extensions;
 using FluentMigrator.Runner.Generators.Generic;
 
@@ -48,34 +49,34 @@ namespace FluentMigrator.Runner.Generators.SqlServer
 
         public virtual string IdentityInsert { get { return "SET IDENTITY_INSERT {0} {1}"; } }
 
-        public override string CreateConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} {2}{3} ({4})"; } }
-
+        public override string CreateConstraint { get { return "ALTER TABLE {0} ADD CONSTRAINT {1} {2}{3}({4})"; } }
+        
         //Not need for the nonclusted keyword as it is the default mode
-        public override string GetClusterTypeString(CreateIndexExpression column)
+        public override string GetClusterTypeString(CreateIndexExpression expr)
         {
-            return column.Index.IsClustered ? "CLUSTERED " : string.Empty;
+            bool? isClustered = expr.Index.IsClustered;
+            return isClustered.HasValue ? (isClustered.Value ? "CLUSTERED " : "NONCLUSTERED ")  : string.Empty;
         }
 
-        protected virtual string GetConstraintClusteringString(CreateConstraintExpression constraint)
+        public override string GetClusterTypeString(CreateConstraintExpression expr)
         {
-            object indexType;
-
-            if (!constraint.Constraint.AdditionalFeatures.TryGetValue(
-                SqlServerExtensions.ConstraintType, out indexType)) return string.Empty;
-
-            return (indexType.Equals(SqlServerConstraintType.Clustered)) ? " CLUSTERED" : " NONCLUSTERED";
+            bool? isClustered = expr.Constraint.IsClustered;
+            return isClustered.HasValue ? (isClustered.Value ? "CLUSTERED " : "NONCLUSTERED ")  : string.Empty;
         }
 
         public override string Generate(CreateConstraintExpression expression)
         {
-            var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY" : "UNIQUE";
+            var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY " : "UNIQUE ";
 
-            var constraintClustering = GetConstraintClusteringString(expression);
+            var constraintClustering = GetClusterTypeString(expression);
 
-            string columns = String.Join(", ", expression.Constraint.Columns.Select(x => Quoter.QuoteColumnName(x)).ToArray());
+            string[] cols = expression.Constraint.Columns.Select(col => Quoter.QuoteColumnName(col.Name) + (col.Direction == Direction.Descending ? " DESC" : String.Empty)).ToArray();
+            string columns = String.Join(", ", cols);
 
-            return string.Format(CreateConstraint, Quoter.QuoteTableName(expression.Constraint.TableName),
-                Quoter.Quote(expression.Constraint.ConstraintName),
+            // "ALTER TABLE {0} ADD CONSTRAINT {1} {2}{3}({4})"
+            return string.Format(CreateConstraint, 
+                Quoter.QuoteTableName(expression.Constraint.TableName),
+                Quoter.QuoteConstraintName(expression.Constraint.ConstraintName),
                 constraintType,
                 constraintClustering,
                 columns);
