@@ -350,7 +350,7 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
                       && ix.Index.TableName == "Bacon"
                       && ix.Index.SchemaName == "Eggs"
                       && !ix.Index.IsUnique
-                      && !ix.Index.IsClustered
+                      && !(ix.Index.IsClustered.HasValue && ix.Index.IsClustered.Value)
                       && ix.Index.Columns.All(c => c.Name == "BaconId")
                                                  )));
 
@@ -382,7 +382,7 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
                       && ix.Index.TableName == "Bacon"
                       && ix.Index.SchemaName == "Eggs"
                       && !ix.Index.IsUnique
-                      && !ix.Index.IsClustered
+                      && !(ix.Index.IsClustered.HasValue && ix.Index.IsClustered.Value)
                       && ix.Index.Columns.All(c => c.Name == "BaconId")
                                                  )));
 
@@ -438,7 +438,7 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
                       && ix.Index.TableName == "Bacon"
                       && ix.Index.SchemaName == "Eggs"
                       && ix.Index.IsUnique
-                      && !ix.Index.IsClustered
+                      && !(ix.Index.IsClustered.HasValue && ix.Index.IsClustered.Value)
                       && ix.Index.Columns.All(c => c.Name == "BaconId")
                                                  )));
 
@@ -470,7 +470,7 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
                       && ix.Index.TableName == "Bacon"
                       && ix.Index.SchemaName == "Eggs"
                       && ix.Index.IsUnique
-                      && !ix.Index.IsClustered
+                      && !(ix.Index.IsClustered.HasValue && ix.Index.IsClustered.Value)
                       && ix.Index.Columns.All(c => c.Name == "BaconId")
                                                  )));
 

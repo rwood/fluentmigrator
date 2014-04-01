@@ -14,8 +14,8 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
     public class CreateConstraintExpressionBuilderTests
     {
         private const string TableName = "Bacon";
-        private const string Column1 = "BaconId";
-        private const string Column2 = "EggsId";
+        private IndexColumnDefinition Column1 = new IndexColumnDefinition { Name = "BaconId", Direction = Direction.Ascending };
+        private IndexColumnDefinition Column2 = new IndexColumnDefinition { Name = "EggsId", Direction = Direction.Ascending };
 
         private Mock<ConstraintDefinition> CreateMockOfConstraint(ConstraintType constraintType, 
             Action<CreateConstraintExpressionBuilder> expressionBuilderAction)
@@ -33,10 +33,14 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
             return constraintMock;
         }
 
-        private Mock<IList<string>> CreateMockOfConstraintColumns(ConstraintType constraintType, 
-            Action<CreateConstraintExpressionBuilder> expressionBuilderAction)
+        private void CreateConstraint(IndexColumnDefinition[] columns)
         {
-            var collectionMock = new Mock<IList<string>>();
+            
+        }
+
+        private Mock<IList<IndexColumnDefinition>> CreateMockOfConstraintColumns(ConstraintType constraintType, Action<CreateConstraintExpressionBuilder> expressionBuilderAction)
+        {
+            var collectionMock = new Mock<IList<IndexColumnDefinition>>();
 
             var constraintMock = new Mock<ConstraintDefinition>(constraintType);
             constraintMock.Setup(f => f.Columns).Returns(collectionMock.Object);
@@ -128,10 +132,7 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
         public void CallingClusteredSetsAdditionalPropertiesForPrimaryKey()
         {
             var constraintMock = CreateMockOfConstraint(ConstraintType.PrimaryKey, b => b.Clustered());
-
-            constraintMock.Object.AdditionalFeatures.ShouldContain(
-                new KeyValuePair<string, object>(SqlServerExtensions.ConstraintType, 
-                    SqlServerConstraintType.Clustered));
+            constraintMock.Object.IsClustered.ShouldBe(true);
         }
 
         [Test]
@@ -139,29 +140,21 @@ namespace FluentMigrator.Tests.Unit.Builders.Create
         {
             var constraintMock = CreateMockOfConstraint(ConstraintType.Unique, b => b.Clustered());
 
-            constraintMock.Object.AdditionalFeatures.ShouldContain(
-                new KeyValuePair<string, object>(SqlServerExtensions.ConstraintType, 
-                    SqlServerConstraintType.Clustered));
+            constraintMock.Object.IsClustered.ShouldBe(true);
         }
 
         [Test]
         public void CallingNonClusteredSetsAdditionalPropertiesForPrimaryKey()
         {
             var constraintMock = CreateMockOfConstraint(ConstraintType.PrimaryKey, b => b.NonClustered());
-
-            constraintMock.Object.AdditionalFeatures.ShouldContain(
-                new KeyValuePair<string, object>(SqlServerExtensions.ConstraintType, 
-                    SqlServerConstraintType.NonClustered));
+            constraintMock.Object.IsClustered.ShouldBe(false);
         }
 
         [Test]
         public void CallingNonClusteredSetsAdditionalPropertiesForUnique()
         {
             var constraintMock = CreateMockOfConstraint(ConstraintType.Unique, b => b.NonClustered());
-
-            constraintMock.Object.AdditionalFeatures.ShouldContain(
-                new KeyValuePair<string, object>(SqlServerExtensions.ConstraintType, 
-                    SqlServerConstraintType.NonClustered));
+            constraintMock.Object.IsClustered.ShouldBe(false);
         }
     }
 }

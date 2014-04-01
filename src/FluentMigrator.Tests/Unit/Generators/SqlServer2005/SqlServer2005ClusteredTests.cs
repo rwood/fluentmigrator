@@ -62,7 +62,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedClusteredPrimaryKeyConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -73,7 +73,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedClusteredPrimaryKeyConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTPRIMARYKEY] PRIMARY KEY CLUSTERED ([TestColumn1])");
@@ -83,7 +83,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedClusteredUniqueConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -94,7 +94,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedClusteredUniqueConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTUNIQUECONSTRAINT] UNIQUE CLUSTERED ([TestColumn1])");
@@ -104,7 +104,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnClusteredPrimaryKeyConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -115,7 +115,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnClusteredPrimaryKeyConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTPRIMARYKEY] PRIMARY KEY CLUSTERED ([TestColumn1], [TestColumn2])");
@@ -125,7 +125,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnClusteredUniqueConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -136,7 +136,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnClusteredUniqueConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.Clustered);
+            expression.Constraint.IsClustered = true;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTUNIQUECONSTRAINT] UNIQUE CLUSTERED ([TestColumn1], [TestColumn2])");
@@ -146,7 +146,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnNonClusteredPrimaryKeyConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -157,7 +157,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnNonClusteredPrimaryKeyConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTPRIMARYKEY] PRIMARY KEY NONCLUSTERED ([TestColumn1], [TestColumn2])");
@@ -167,7 +167,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnNonClusteredUniqueConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -178,7 +178,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedMultiColumnNonClusteredUniqueConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedMultiColumnUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTUNIQUECONSTRAINT] UNIQUE NONCLUSTERED ([TestColumn1], [TestColumn2])");
@@ -188,7 +188,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedNonClusteredPrimaryKeyConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -199,7 +199,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedNonClusteredPrimaryKeyConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedPrimaryKeyExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTPRIMARYKEY] PRIMARY KEY NONCLUSTERED ([TestColumn1])");
@@ -209,7 +209,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedNonClusteredUniqueConstraintWithCustomSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
             expression.Constraint.SchemaName = "TestSchema";
 
             var result = Generator.Generate(expression);
@@ -220,7 +220,7 @@ namespace FluentMigrator.Tests.Unit.Generators.SqlServer2005
         public override void CanCreateNamedNonClusteredUniqueConstraintWithDefaultSchema()
         {
             var expression = GeneratorTestHelper.GetCreateNamedUniqueConstraintExpression();
-            expression.Constraint.AdditionalFeatures.Add(SqlServerExtensions.ConstraintType, SqlServerConstraintType.NonClustered);
+            expression.Constraint.IsClustered = false;
 
             var result = Generator.Generate(expression);
             result.ShouldBe("ALTER TABLE [dbo].[TestTable1] ADD CONSTRAINT [TESTUNIQUECONSTRAINT] UNIQUE NONCLUSTERED ([TestColumn1])");

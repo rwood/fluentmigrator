@@ -496,7 +496,7 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition{ Name = TestColumnName1, Direction = Direction.Ascending });
             expression.ApplyConventions(new MigrationConventions());
             return expression;
         }
@@ -505,7 +505,7 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
             expression.Constraint.ConstraintName = "TESTPRIMARYKEY";
             return expression;
         }
@@ -514,8 +514,8 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
-            expression.Constraint.Columns.Add(TestColumnName2);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName2, Direction = Direction.Ascending });
             expression.ApplyConventions(new MigrationConventions());
             return expression;
         }
@@ -524,8 +524,8 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
-            expression.Constraint.Columns.Add(TestColumnName2);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName2, Direction = Direction.Ascending });
             expression.Constraint.ConstraintName = "TESTPRIMARYKEY";
             return expression;
         }
@@ -534,7 +534,7 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.Unique);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
             expression.ApplyConventions(new MigrationConventions());
             return expression;
         }
@@ -543,7 +543,7 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.Unique);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
             expression.Constraint.ConstraintName = "TESTUNIQUECONSTRAINT";
             return expression;
         }
@@ -552,8 +552,8 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.Unique);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
-            expression.Constraint.Columns.Add(TestColumnName2);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName2, Direction = Direction.Ascending });
             expression.ApplyConventions(new MigrationConventions());
             return expression;
         }
@@ -562,8 +562,8 @@ namespace FluentMigrator.Tests.Unit.Generators
         {
             var expression = new CreateConstraintExpression(ConstraintType.Unique);
             expression.Constraint.TableName = TestTableName1;
-            expression.Constraint.Columns.Add(TestColumnName1);
-            expression.Constraint.Columns.Add(TestColumnName2);
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName1, Direction = Direction.Ascending });
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = TestColumnName2, Direction = Direction.Ascending });
             expression.Constraint.ConstraintName = "TESTUNIQUECONSTRAINT";
             return expression;
         }

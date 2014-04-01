@@ -52,7 +52,7 @@ namespace FluentMigrator.Tests.Unit.Expressions
                     TableName = "table1"
                 }
             };
-            expression.Constraint.Columns.Add("column1");
+            expression.Constraint.Columns.Add(new IndexColumnDefinition { Name = "column1", Direction = Direction.Ascending });
 
             var errors = ValidationHelper.CollectErrors(expression);
             Assert.That(errors.Count, Is.EqualTo(0));

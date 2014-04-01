@@ -1522,7 +1522,7 @@ namespace FluentMigrator.Tests.Integration
     {
         public override void Up()
         {
-            Create.UniqueConstraint("TestUnique").OnTable("TestTable2").WithSchema("TestSchema").Column("Name");
+            Create.UniqueConstraint("TestUnique").OnTable("TestTable2").InSchema("TestSchema").Column("Name");
         }
 
         public override void Down()
@@ -1590,7 +1590,7 @@ namespace FluentMigrator.Tests.Integration
     {
         public override void Up()
         {
-            Create.UniqueConstraint("TestUnique").OnTable("TestTable2").WithSchema("TestSchema").Column("Name");
+            Create.UniqueConstraint("TestUnique").OnTable("TestTable2").InSchema("TestSchema").Column("Name");
         }
     }
 
