@@ -1,6 +1,6 @@
-﻿namespace FluentMigrator.Builders.Create.Constraint
+﻿public interface ICreateConstraintOptionsSyntax
 {
-    public interface ICreateConstraintOptionsSyntax
-    {
-    }
+    ICreateConstraintOnColumnSyntax NonClustered();
+    ICreateConstraintOnColumnSyntax Clustered();
+    ICreateConstraintOnColumnSyntax Fill(int fillFactor);
 }

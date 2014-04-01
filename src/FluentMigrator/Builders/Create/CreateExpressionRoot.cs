@@ -99,7 +99,7 @@ namespace FluentMigrator.Builders.Create
             return new CreateConstraintExpressionBuilder(expression);
         }
 
-        public Constraint.ICreateConstraintOnTableSyntax UniqueConstraint(string constraintName)
+        public ICreateConstraintOnTableSyntax UniqueConstraint(string constraintName)
         {
             var expression = new CreateConstraintExpression(ConstraintType.Unique);
             expression.Constraint.ConstraintName = constraintName;
@@ -107,14 +107,14 @@ namespace FluentMigrator.Builders.Create
             return new CreateConstraintExpressionBuilder(expression);
         }
 
-        public Constraint.ICreateConstraintOnTableSyntax PrimaryKey()
+        public ICreateConstraintOnTableSyntax PrimaryKey()
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             _context.Expressions.Add(expression);
             return new CreateConstraintExpressionBuilder(expression);
         }
 
-        public Constraint.ICreateConstraintOnTableSyntax PrimaryKey(string primaryKeyName)
+        public ICreateConstraintOnTableSyntax PrimaryKey(string primaryKeyName)
         {
             var expression = new CreateConstraintExpression(ConstraintType.PrimaryKey);
             expression.Constraint.ConstraintName = primaryKeyName;

@@ -1,7 +1,4 @@
-﻿namespace FluentMigrator.Builders.Create.Constraint
+﻿public interface ICreateConstraintOnTableSyntax
 {
-    public interface ICreateConstraintOnTableSyntax
-    {
-        ICreateConstraintWithSchemaOrColumnSyntax OnTable(string tableName);
-    }
+    ICreateConstraintOnColumnOrInSchemaSyntax OnTable(string tableName);
 }

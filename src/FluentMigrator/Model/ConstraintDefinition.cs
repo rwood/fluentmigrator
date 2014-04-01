@@ -17,11 +17,13 @@ namespace FluentMigrator.Model
         private ConstraintType constraintType;
         public bool IsPrimaryKeyConstraint { get { return ConstraintType.PrimaryKey == constraintType; } }
         public bool IsUniqueConstraint { get { return ConstraintType.Unique == constraintType; } }
+        public bool? IsClustered { get; set; }
+        public int? FillFactor { get; set; }
 
         public virtual string SchemaName { get; set; }
         public virtual string ConstraintName { get; set; }
         public virtual string TableName { get; set; }
-        public virtual ICollection<string> Columns { get; set; }
+        public virtual ICollection<IndexColumnDefinition> Columns { get; set; }
 
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace FluentMigrator.Model
         {
             constraintType = type;
 
-            Columns = new HashSet<string>();
+            Columns = new HashSet<IndexColumnDefinition>();
         }
 
         #region ICloneable Members
@@ -40,9 +42,13 @@ namespace FluentMigrator.Model
         {
             return new ConstraintDefinition(constraintType)
             {
-                Columns = Columns,
                 ConstraintName = ConstraintName,
-                TableName = TableName
+                SchemaName = SchemaName,
+                TableName = TableName,
+                Columns = Columns,
+                constraintType = constraintType,
+                IsClustered = IsClustered,
+                FillFactor = FillFactor
             };
         }
 

@@ -120,7 +120,7 @@ namespace FluentMigrator.Infrastructure
             sb.Append(expression.TableName);
             foreach (var column in expression.Columns)
             {
-                sb.Append("_" + column);
+                sb.Append("_" + column.Name);
             }
             return sb.ToString();
         }

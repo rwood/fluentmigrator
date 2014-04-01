@@ -253,18 +253,14 @@ namespace FluentMigrator.Runner.Generators.Postgres
         {
             var constraintType = (expression.Constraint.IsPrimaryKeyConstraint) ? "PRIMARY KEY" : "UNIQUE";
 
-            string[] columns = new string[expression.Constraint.Columns.Count];
+            string[] cols = expression.Constraint.Columns.Select(x => Quoter.QuoteColumnName(x.Name) + (x.Direction == Direction.Descending ? " DESC" : String.Empty)).ToArray();
 
-            for (int i = 0; i < expression.Constraint.Columns.Count; i++)
-            {
-                columns[i] = Quoter.QuoteColumnName(expression.Constraint.Columns.ElementAt(i));
-            }
-
-            return string.Format("ALTER TABLE {0}.{1} ADD CONSTRAINT {2} {3} ({4})", Quoter.QuoteSchemaName(expression.Constraint.SchemaName),
+            return string.Format("ALTER TABLE {0}.{1} ADD CONSTRAINT {2} {3} ({4})", 
+                Quoter.QuoteSchemaName(expression.Constraint.SchemaName),
                 Quoter.QuoteTableName(expression.Constraint.TableName),
                 Quoter.QuoteConstraintName(expression.Constraint.ConstraintName),
                 constraintType,
-                String.Join(", ", columns));
+                String.Join(", ", cols));
         }
 
         protected string GetColumnList(IEnumerable<string> columns)

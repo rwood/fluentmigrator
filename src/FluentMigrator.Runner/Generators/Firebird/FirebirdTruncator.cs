@@ -102,7 +102,7 @@ namespace FluentMigrator.Runner.Generators.Firebird
         {
             constraint.TableName = Truncate(constraint.TableName);
             constraint.ConstraintName = packKeyNames ? Pack(constraint.ConstraintName) : Truncate(constraint.ConstraintName);
-            constraint.Columns = TruncateNames(constraint.Columns);
+            constraint.Columns.ToList().ForEach(x => x.Name = Truncate(x.Name));
         }
 
         public void Truncate(CreateConstraintExpression expression)

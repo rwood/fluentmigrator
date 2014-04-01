@@ -31,12 +31,12 @@ namespace FluentMigrator.Runner.Generators.SqlServer
         {
         }
 
-        public override string GetClusterTypeString(CreateIndexExpression column)
+        public override string GetClusterTypeString(CreateIndexExpression expr)
         {
             return string.Empty;
         }
 
-        protected override string GetConstraintClusteringString(CreateConstraintExpression constraint)
+        public override string GetClusterTypeString(CreateConstraintExpression expr)
         {
             return string.Empty;
         }
