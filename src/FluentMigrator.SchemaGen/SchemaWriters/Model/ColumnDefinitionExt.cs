@@ -79,19 +79,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
                 sb.Append(".Identity()");
             }
 
-            if (IsPrimaryKey)
-            {
-                //sb.AppendFormat(".PrimaryKey(\"{0}\")", column.PrimaryKeyName);
-                sb.AppendFormat(".PrimaryKey()");
-            }
-            else if (IsUnique)
-            {
-                sb.AppendFormat(".Unique(\"{0}\")", IndexName);
-            }
-            else if (IsIndexed)
-            {
-                sb.AppendFormat(".Indexed(\"{0}\")", IndexName);
-            }
+            //if (IsPrimaryKey)
+            //{
+            //    //sb.AppendFormat(".PrimaryKey(\"{0}\")", column.PrimaryKeyName);
+            //    sb.AppendFormat(".PrimaryKey()");
+            //}
+            //else if (IsUnique)
+            //{
+            //    sb.AppendFormat(".Unique(\"{0}\")", IndexName);
+            //}
+            //else if (IsIndexed)
+            //{
+            //    sb.AppendFormat(".Indexed(\"{0}\")", IndexName);
+            //}
 
             if (IsNullable.HasValue)
             {

@@ -46,10 +46,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
             }
             lines.Indent(-1);
 
-            var nonColIndexes = GetNonColumnIndexes();
-
             // Split lines to make indenting work.
-            lines.WriteSplitLines(nonColIndexes.Select(index => index.CreateCode));
+            lines.WriteSplitLines(Indexes.Select(index => index.CreateCode));
             lines.WriteSplitLines(ForeignKeys.Select(fk => fk.CreateCode));
 
             return lines;
@@ -58,12 +56,6 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
         public string GetDeleteCode()
         {
             return string.Format("Delete.Table(\"{0}\").InSchema(\"{1}\");", Name, SchemaName);
-        }
-
-        public IEnumerable<IndexDefinitionExt> GetNonColumnIndexes()
-        {
-            // Only single colum primary keys are declared with the table.
-            return from ix in Indexes where !(ix.IsPrimary && ix.Columns.Count() == 1) select ix;
         }
 
         public void GetAlterTableCode(CodeLines lines, IEnumerable<string> codeChanges, IEnumerable<string> oldCode = null)

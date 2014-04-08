@@ -36,9 +36,19 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
         }
 
         public string DeleteCode {
-            get {
-                return string.Format("{0}Delete.Index(\"{1}\").OnTable(\"{2}\").InSchema(\"{3}\");",
-                     GetIfDatabase(), Name, TableName, SchemaName);
+            get 
+            {
+                if (IsPrimary)
+                {
+                    return string.Format("Delete.PrimaryKey(\"{0}\").FromTable(\"{1}\").InSchema(\"{2}\");", 
+                        Name, TableName, SchemaName);
+                }
+                else
+                {
+                    //Example: Create.Index("ix_Name").OnTable("TestTable2").OnColumn("Name").Ascending().WithOptions().NonClustered();
+                    return string.Format("{3}Delete.Index(\"{0}\").OnTable(\"{1}\").InSchema(\"{2}\");", 
+                        Name, TableName, SchemaName, GetIfDatabase());
+                }
             }
         }
 
@@ -53,9 +63,17 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
         {
             string nameArg = SchemaGenOptions.Instance.DefaultNaming ? "" : string.Format("\"{0}\"", Name);
 
-            //Example: Create.Index("ix_Name").OnTable("TestTable2").OnColumn("Name").Ascending().WithOptions().NonClustered();
-            return string.Format("{0}Create.Index({1}).OnTable(\"{2}\").InSchema(\"{3}\"){4}",
-                GetIfDatabase(), nameArg, TableName, SchemaName, GetCreateIndexDefCode());
+            if (IsPrimary)
+            {
+                return string.Format("Create.PrimaryKey({0}).OnTable(\"{1}\").InSchema(\"{2}\"){3}",
+                    nameArg, TableName, SchemaName, GetCreateIndexDefCode());
+            }
+            else
+            {
+                //Example: Create.Index("ix_Name").OnTable("TestTable2").OnColumn("Name").Ascending().WithOptions().NonClustered();
+                return string.Format("{0}Create.Index({1}).OnTable(\"{2}\").InSchema(\"{3}\"){4}",
+                    GetIfDatabase(), nameArg, TableName, SchemaName, GetCreateIndexDefCode());
+            }
         }
 
         private string GetIfDatabase()
@@ -66,14 +84,14 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
         public string GetCreateIndexDefCode()
         {
             var sb = new StringBuilder();
-            if (IsUnique)
+            if (IsUnique && !IsPrimary)
             {
                 sb.AppendFormat(".WithOptions().Unique()");
             }
 
-            if (IsClustered)
+            if (IsClustered.HasValue)
             {
-                sb.AppendFormat(".WithOptions().Clustered()");
+                sb.AppendFormat(".WithOptions()" + (IsClustered.Value ? ".Clustered()" : ".NonClustered()"));
             }
 
             if (FillFactor != null)
@@ -83,7 +101,7 @@ namespace FluentMigrator.SchemaGen.SchemaWriters.Model
 
             foreach (var col in Columns)
             {
-                sb.AppendFormat("\n\t.OnColumn(\"{0}\")", col.Name);
+                sb.AppendFormat("\n\t.{0}(\"{1}\")", IsPrimary ? "Column" : "OnColumn", col.Name);
                 sb.AppendFormat(".{0}()", col.Direction.ToString());
             }
 
