@@ -94,8 +94,9 @@ namespace FluentMigrator.Expressions
         private enum ParserState
         {
             InCode,                 // not in comment or code
-            StartComment,           // observed 1st '/'
-            InSingleLineComment,    // observed "//..." waiting for newline
+            StartSlashComment,           // observed 1st '/'
+            StartDashComment,       // observed 1st '-'
+            InSingleLineComment,    // observed "//..." or "--..." and now waiting for newline
             InMultiLineComment,     // observed "/*..." waiting for "*"
             EndMultiLineComment,    // observed "/*...*" waiting for "/"
             InQuote                 // observed ' ... waiting for matching '
@@ -112,7 +113,8 @@ namespace FluentMigrator.Expressions
                 switch (state)
                 {
                     case ParserState.InCode:
-                        if (ch == '/') state = ParserState.StartComment;    // possible start of a // or /* comment
+                        if (ch == '/') state = ParserState.StartSlashComment;      // possible start of a // or /* comment
+                        else if (ch == '-') state = ParserState.StartDashComment;  // possible start of a -- comment
                         else if (ch == '\'') state = ParserState.InQuote;
                         break;
 
@@ -120,7 +122,16 @@ namespace FluentMigrator.Expressions
                         if (ch == '\'') state = ParserState.InCode; // found closing quote
                         break;
 
-                    case ParserState.StartComment:
+                    case ParserState.StartDashComment:
+                        if (ch == '-') state = ParserState.InSingleLineComment;
+                        else
+                        {
+                            state = ParserState.InCode;
+                            yield return '-';   // prior '-' was not part of a comment
+                        }
+                        break;
+
+                    case ParserState.StartSlashComment:
                         if (ch == '/') state = ParserState.InSingleLineComment;
                         else if (ch == '*') state = ParserState.InMultiLineComment;
                         else
