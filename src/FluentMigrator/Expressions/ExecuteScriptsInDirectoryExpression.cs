@@ -177,8 +177,7 @@ namespace FluentMigrator.Expressions
         {
             foreach (var file in GetSqlFiles())
             {
-                processor.Announcer.Say(file.FullName);
-
+                processor.Announcer.Emphasize(file.FullName);
                 string allSqlText = File.ReadAllText(file.FullName);
 
                 // Remove comments to keep 'Jet' Provider happy.
@@ -199,6 +198,7 @@ namespace FluentMigrator.Expressions
 
                     try
                     {
+                        processor.Announcer.Say(sqlStatement1);
                         processor.Execute(sqlStatement1);
                     }
                     catch (Exception ex)
