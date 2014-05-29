@@ -198,7 +198,6 @@ namespace FluentMigrator.Expressions
 
                     try
                     {
-                        processor.Announcer.Say(sqlStatement1);
                         processor.Execute(sqlStatement1);
                     }
                     catch (Exception ex)
