@@ -54,8 +54,8 @@ namespace FluentMigrator.SchemaGen.MSBuild
         public string IncludeTables { get; set; }
         public string ExcludeTables { get; set; }
 
-        public bool PreScripts { get; set; }
-        public bool PostScripts { get; set; }
+        public string PreScripts { get; set; }
+        public string PostScripts { get; set; }
         public bool PerTableScripts { get; private set; }
 
         public bool DefaultNaming { get; set; }

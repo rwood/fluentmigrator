@@ -82,16 +82,16 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         public void CanEmbedTaggedSqlFile()
         {
             string[] actual = writer.EmbedSqlFile(new FileInfo(SQL_DIR + "\\sample2.sql")).ToArray();
-            File.WriteAllLines(@"sample2.txt", actual); // Capture regression to Debug folder
+            File.WriteAllLines(@"CanEmbedTaggedSqlFile.txt", actual); // Capture regression to Debug folder
 
-            string[] expected = File.ReadAllLines(@"Expected\sample2.txt");
+            string[] expected = File.ReadAllLines(@"Expected\CanEmbedTaggedSqlFile.txt");
             actual.ShouldBe(expected);
         }
 
         [Test]
         public void CanLinkSqlDirectoryWithTaggedFiles()
         {
-            CodeLines lines = writer.ExecuteSqlDirectory(new DirectoryInfo(SQL_DIR));
+            CodeLines lines = writer.ExecuteSqlDirectory(new DirectoryInfo(SQL_DIR), null);
             lines.Count().ShouldBe(2);
             lines.ToArray()[1].ShouldBe(@"Execute.ScriptsInNestedDirectories(""."").WithTag(this.GetDbTag()).WithGos();");
         }
@@ -100,10 +100,35 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
         public void CanEmbedSqlDirectoryWithTaggedFiles()
         {
             options.EmbedSql = true;            // Turn ON
-            var actual = writer.ExecuteSqlDirectory(new DirectoryInfo(SQL_DIR + "\\3_Post")).ToArray();
-            File.WriteAllLines(@"embed-all.txt", actual); // Capture regression to Debug folder
+            var actual = writer.ExecuteSqlDirectory(new DirectoryInfo(SQL_DIR + "\\3_Post"), null).ToArray();
+            File.WriteAllLines(@"CanEmbedSqlDirectoryWithTaggedFiles.txt", actual); // Capture regression to Debug folder
 
-            string[] expected= File.ReadAllLines(@"Expected\embed-all.txt");
+            string[] expected = File.ReadAllLines(@"Expected\CanEmbedSqlDirectoryWithTaggedFiles.txt");
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public void ExecutePrePostSqlDirectory_WhenTrue()
+        {
+            var actual = writer.ExecutePrePostSqlDirectory(new DirectoryInfo(SQL_DIR), "true").ToArray();
+            File.WriteAllLines(@"ExecutePrePostSqlDirectory_WhenTrue.txt", actual); // Capture regression to Debug folder
+            string[] expected = File.ReadAllLines(@"Expected\ExecutePrePostSqlDirectory_WhenTrue.txt");
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public void ExecutePrePostSqlDirectory_WhenFalse()
+        {
+            var actual = writer.ExecutePrePostSqlDirectory(new DirectoryInfo(SQL_DIR), "false").ToArray();
+            actual.Length.ShouldBe(0);
+        }
+
+        [Test]
+        public void ExecutePrePostSqlDirectory_WhenTagged()
+        {
+            var actual = writer.ExecutePrePostSqlDirectory(new DirectoryInfo(SQL_DIR), "AC|SS").ToArray();
+            File.WriteAllLines(@"ExecutePrePostSqlDirectory_WhenTagged.txt", actual); // Capture regression to Debug folder
+            string[] expected = File.ReadAllLines(@"Expected\ExecutePrePostSqlDirectory_WhenTagged.txt");
             actual.ShouldBe(expected);
         }
 
@@ -119,9 +144,9 @@ namespace FluentMigrator.SchemaGen.Test.SchemaWriters
             options.PerTableScripts = true;
             var actual2 = writer.ExecutePerTableSqlScripts(false, "table2").ToArray();
 
-            File.WriteAllLines(@"up_table2.txt", actual2); // Capture regression to Debug folder
+            File.WriteAllLines(@"CanExecutePerTableSqlScripts.txt", actual2); // Capture regression to Debug folder
 
-            string[] expected = File.ReadAllLines(@"Expected\up_table2.txt");
+            string[] expected = File.ReadAllLines(@"Expected\CanExecutePerTableSqlScripts.txt");
             actual2.ShouldBe(expected);
         }
         

@@ -1,0 +1,5 @@
+
+if (this.GetDbTag() == "AC" || this.GetDbTag() == "SS")
+{
+    Execute.ScriptsInNestedDirectories(".").WithTag(this.GetDbTag()).WithGos();
+}

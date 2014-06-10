@@ -1,0 +1,2 @@
+
+Execute.ScriptsInNestedDirectories(".").WithTag(this.GetDbTag()).WithGos();

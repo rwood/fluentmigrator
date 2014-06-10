@@ -52,8 +52,8 @@ namespace FluentMigrator.SchemaGen
         string SqlDir { get; }
         bool EmbedSql { get; }
 
-        bool PreScripts { get; }
-        bool PostScripts { get; }
+        string PreScripts { get; }
+        string PostScripts { get; }
         bool PerTableScripts { get; }
 
         bool DefaultNaming { get; }
@@ -148,10 +148,10 @@ namespace FluentMigrator.SchemaGen
         public bool EmbedSql { get; set; }
 
         [Option("pre-scripts", DefaultValue = true, HelpText = "If true, imports Pre schema change SQL scripts.")]
-        public bool PreScripts { get; set; }
+        public string PreScripts { get; set; }
 
         [Option("post-scripts", DefaultValue = true, HelpText = "If true, import Post schema change SQL scripts.")]
-        public bool PostScripts { get; set; }
+        public string PostScripts { get; set; }
 
         [Option("per-table-scripts", DefaultValue = true, HelpText = "If true, imports a data migration script per table as part of table migration class.")]
         public bool PerTableScripts { get; set; }

@@ -32,7 +32,8 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
         CodeLines EmbedSql(string sqlStatement, string relPath = null, int nStatement = 0);
         CodeLines EmbedSqlFile(FileInfo sqlFile);
         CodeLines ExecuteSqlFile(FileInfo sqlFile);
-        CodeLines ExecuteSqlDirectory(DirectoryInfo subfolder);
+        CodeLines ExecutePrePostSqlDirectory(DirectoryInfo dir, string tags);
+        CodeLines ExecuteSqlDirectory(DirectoryInfo dir, string[] tags);
         CodeLines ExecutePerTableSqlScripts(bool isCreate, string tableName);
     }
 
@@ -181,33 +182,44 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
             return lines;
         }
 
-        public CodeLines ExecuteSqlDirectory(DirectoryInfo dir)
+        public CodeLines ExecutePrePostSqlDirectory(DirectoryInfo dir, string prePostTags)
         {
-            var lines = new CodeLines();
-            if (options.SqlDirectory != null)
+            if (prePostTags.ToLower() == "false") return new CodeLines();
+            string[] tags = prePostTags.ToLower() == "true" ? new string[] { } : prePostTags.Split('|');
+            return ExecuteSqlDirectory(dir, tags);
+        }
+
+        public CodeLines ExecuteSqlDirectory(DirectoryInfo dir, string[] tags)
+        {
             {
                 if (options.EmbedSql)
                 {
                     if (!dir.Exists)
                     {
                         announcer.Emphasize(dir.FullName + ": SQL Script directory not found.");
+                        return new CodeLines();
                     }
                     {
-                        lines.WriteLines(EmbedTaggedSqlDirectory(dir));
+                        return GetIfStatementWithTags(tags, () => EmbedTaggedSqlDirectory(dir));
                     }
                 }
                 else
                 {
-                    // CurrentDatabaseTag = Tag used to select script for database currently being migrated. 
-                    // Implemented in Migrations.FM_Extensions.MigrationExt.CurrentDatabaseTag in SchemaGenTemplate.csproj project
 
-                    // SQL script paths must be relaive to SQL directory.
-                    // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
-                    lines.WriteLine();
-                    lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithTag({1}).WithGos();",
-                        GetRelativePath(dir, options.SqlBaseDirectory).Replace("\\", "\\\\"), CallGetDbTag);
+                    return GetIfStatementWithTags(tags, () => ScriptsInNestedDirectories(dir));
                 }
             }
+        }
+
+        private CodeLines ScriptsInNestedDirectories(DirectoryInfo dir)
+        {
+            var lines = new CodeLines();
+            // CallGetDbTag() = Tag used to select script for database currently being migrated. 
+            // Implemented in Migrations.FM_Extensions.MigrationExt.CurrentDatabaseTag in SchemaGenTemplate.csproj project
+            // SQL script paths must be relaive to SQL directory.
+            // When executed, RunnerContext.WorkingDirectory = the SQL directory used by FluentMigrator.Runner API.
+            lines.WriteLine("Execute.ScriptsInNestedDirectories(\"{0}\").WithTag({1}).WithGos();",
+                GetRelativePath(dir, options.SqlBaseDirectory).Replace("\\", "\\\\"), CallGetDbTag);
             return lines;
         }
 
@@ -220,25 +232,33 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                    select tag;
         }
 
-        private CodeLines GetIfStatementWithTags(IEnumerable<string> fileTags, Func<CodeLines> fnEmedSql)
+        /// <summary>
+        /// Generates an IF condition statement based on current database tag.
+        /// </summary>
+        /// <param name="tags">Tags to test</param>
+        /// <param name="fnBlockCode">Function to generate code in IF statement block</param>
+        /// <returns></returns>
+        private CodeLines GetIfStatementWithTags(IEnumerable<string> tags, Func<CodeLines> fnBlockCode)
         {
+            if (fnBlockCode == null) throw new ArgumentNullException("fnBlockCode");
+
             var lines = new CodeLines();
-            string[] tags = fileTags.ToArray();
+            string[] tagArray = tags == null ? new string[]{} : tags.ToArray();
  
-            CodeLines sqlLines = fnEmedSql();
-            if (sqlLines.Any())
+            CodeLines blockLines = fnBlockCode();
+            if (blockLines.Any())
             {
                 lines.WriteLine();
 
-                if (!tags.Any()) // filename: cr_<table>.sql or up_<table>.sql
+                if (!tagArray.Any()) // filename: cr_<table>.sql or up_<table>.sql
                 {
-                    lines.WriteLines(sqlLines);
+                    lines.WriteLines(blockLines);
                 }
                 else
                 {
-                    // Example: if (this.GetCurrentDatabaseTag() == "TAG1" || this.GetCurrentDatabaseTag() == "TAG2") { ... embed sql ... }
-                    string condition = tags.Select(tag => string.Format("{0} == \"{1}\"", CallGetDbTag, tag)).StringJoin(" || ");
-                    lines.Block(string.Format("if ({0})", condition), () => sqlLines);
+                    // Example: if (this.GetDbTag() == "AC1" || this.GetDbTag() == "SS") { ... block code ... }
+                    string condition = tagArray.Select(tag => string.Format("{0} == \"{1}\"", CallGetDbTag, tag)).StringJoin(" || ");
+                    lines.Block(string.Format("if ({0})", condition), () => blockLines);
                 }
             }
             return lines;

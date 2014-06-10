@@ -97,9 +97,9 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
 
             // An additional post processing folder "M3_Post" contains SQL that is run every time.
 
-            if (options.PreScripts)
+            if (options.PreScripts.ToLower() != "false")
             {
-                WriteMigrationClass("PreScripts", () => sqlFileWriter.ExecuteSqlDirectory(options.SqlPreDirectory), CantUndo);
+                WriteMigrationClass("PreScripts", () => sqlFileWriter.ExecutePrePostSqlDirectory(options.SqlPreDirectory, options.PreScripts), CantUndo);
             }
 
             // Create/Update All tables/columns/indexes/foreign keys
@@ -120,10 +120,10 @@ namespace FluentMigrator.SchemaGen.SchemaWriters
                 WriteMigrationClass("DropRemovedObjects", DropRemovedObjects, CantUndo);
             }
 
-            if (options.PostScripts)
+            if (options.PreScripts.ToLower() != "false")
             {
-                // Post processing ProfileAttribute migration classes that always execute.                
-                WriteMigrationClass("PostScripts", () => sqlFileWriter.ExecuteSqlDirectory(options.SqlPostDirectory), CantUndo);
+                // Post processing ProfileAttribute migration classes that always execute.
+                WriteMigrationClass("PostScripts", () => sqlFileWriter.ExecutePrePostSqlDirectory(options.SqlPostDirectory, options.PostScripts), CantUndo);
             }
 
             if (options.StepEnd != -1)
