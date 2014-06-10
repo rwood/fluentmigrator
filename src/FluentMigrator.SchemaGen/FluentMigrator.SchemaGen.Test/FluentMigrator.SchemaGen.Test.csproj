@@ -101,8 +101,12 @@
     <Content Include="Expected\CanExecutePerTableSqlScripts.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Expected\ExecutePrePostSqlDirectory_WhenTagged.txt" />
-    <Content Include="Expected\ExecutePrePostSqlDirectory_WhenTrue.txt" />
+    <Content Include="Expected\ExecutePrePostSqlDirectory_WhenTagged.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Expected\ExecutePrePostSqlDirectory_WhenTrue.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SchemaGenTest-SQL\1_Pre\pre2.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
