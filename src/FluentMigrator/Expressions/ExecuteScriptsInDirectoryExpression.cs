@@ -44,7 +44,7 @@ namespace FluentMigrator.Expressions
         /// </summary>
         public string ScriptPrefix = "";
 
-        private static readonly Regex goSplitter = new Regex("\\s+GO\\s+|^GO\\s+", RegexOptions.Multiline);
+        private static readonly Regex goSplitter = new Regex("^\\s*GO\\s*$", RegexOptions.Multiline);
 
         private static readonly Regex digitsOnly = new Regex(@"^\d$");
 
