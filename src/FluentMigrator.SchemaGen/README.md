@@ -8,7 +8,7 @@ Generated classes are intended to be added a C# project that outputs a DLL that 
 C# Project Template
 -------------------
 
-You should always use the provided **SchemaGenTemplate** C# project as a template for creating any new migration projects that will accepted generated migration classes.
+You should always use the provided **SchemaGenTemplate** C# project as a template for creating any new migration projects that will contain the generated migration classes.
 
 The C# migration classes output by the code generator inherit from MigrationExt and AutoReversingMigrationExt that in turn inherit from the Migration and AutoReversingMigration migration base classes supplied by the FM API. The C# **SchemaGenTemplate** project includes these extension classes and additional helper classes that the generated classes depend on.
 Classes included in this C# project template assume that the project root **namespace** is set to **Migrations**. 
@@ -24,7 +24,7 @@ Main Features:
   * Generates a class per table ordered by FK dependency constraints. 
   * Migration class are number based a migration version: major.minor.patch.step 
     * You supply the major.minor.patch  (e.g. **3.1.2**)
-    * The step is generated and defines the execution order of the classes.
+    * The step number is generated and defines the execution order of the classes.
     * You can optionally start/end step number to support merging sets of generated classes.
     * Shows internal migration number as a comment. 
       * Useful when debugging to run a migration up to a previous migration number and then test the failing SQL.
