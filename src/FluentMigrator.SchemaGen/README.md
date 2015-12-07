@@ -22,7 +22,7 @@ Main Features:
     * Generated schema can then be used to install / upgrade other database types supported by Fluent Migrator.
     * Include/exclude tables by name or pattern.
   * Generates a class per table ordered by FK dependency constraints. 
-  * Migration class are number based a migration version: major.minor.patch.step 
+  * Migration class are number based on a migration version: major.minor.patch.step 
     * You supply the major.minor.patch  (e.g. **3.1.2**)
     * The step number is generated and defines the execution order of the classes.
     * You can optionally start/end step number to support merging sets of generated classes.
