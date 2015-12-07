@@ -20,7 +20,7 @@ Main Features:
 
   * Code generation of classes that perform a **full** or **upgrade** schema migration (tables, indexes, foriegn keys) based on existing SQL Server 2008+ databases.
     * Generated schema can then be used to install / upgrade other database types supported by Fluent Migrator.
-    * Can select included and excluded tables by name or pattern.
+    * Include/exclude tables by name or pattern.
   * Generates a class per table ordered by FK dependency constraints. 
   * Migration class are number based a migration version: major.minor.patch.step 
     * You supply the major.minor.patch  (e.g. **3.1.2**)
